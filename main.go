@@ -3,40 +3,57 @@ package main
 import (
 	"flag"
 	fmt "github.com/k0kubun/pp"
-	"os"
+	//	"os"
 	"path/filepath"
 )
 
+type options struct {
+	all bool
+}
+
+type tree struct {
+	opts        *options
+	infos       []*info
+	dirs, files int
+}
+
+// Call visit
+func (t *tree) visit() {
+	for _, inf := range t.infos {
+		if inf.err == nil {
+			visit(inf)
+		}
+	}
+}
+
+func (t *tree) print() {
+	fmt.Println(t)
+}
+
 var (
-	input = flag.String("i", "", "")
+	all = flag.Bool("a", false, "")
 )
 
 func main() {
 	flag.Parse()
-	fmt.Println("input ==>", *input)
-
-	var infos []*Info
 	var dirs = []string{"."}
+	// Make it work with leading dirs
 	if args := flag.Args(); len(args) > 0 {
 		dirs = args
 	}
-	// Loop over all root dirs
-	for _, dir := range dirs {
-		var info *Info
-		if path, err := filepath.Abs(dir); err != nil {
-			info = &Info{path: path, err: err}
-		} else {
-			fi, err := os.Stat(path)
-			info = &Info{fi, path, err, nil}
-		}
-		infos = append(infos, info)
+	tr := &tree{
+		opts: &options{
+			all: *all,
+		},
+		infos: make([]*info, len(dirs)),
 	}
-	// Print infos
-	for _, info := range infos {
-		if info.err == nil {
-			fmt.Println(info.path, info.Name(), info.IsDir())
-		} else {
-			fmt.Println(info.path, info.err.Error())
+	for i, dir := range dirs {
+		path, err := filepath.Abs(dir)
+		if err != nil {
+			tr.infos[i] = &info{path: dir, err: err}
 		}
+		tr.infos[i] = &info{path: path, tr: tr}
 	}
+	tr.visit() // visit all infos
+	tr.print() // print based on options format
 }
