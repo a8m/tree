@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	fmt "github.com/k0kubun/pp"
-	//	"os"
 	"path/filepath"
 )
 
@@ -21,9 +20,11 @@ type tree struct {
 func (t *tree) visit() {
 	for _, inf := range t.infos {
 		if inf.err == nil {
-			visit(inf)
+			d, f := inf.visit(t.opts)
+			t.dirs, t.files = t.dirs+d, t.files+f
 		}
 	}
+	fmt.Println(t.dirs, t.files)
 }
 
 func (t *tree) print() {
@@ -45,6 +46,7 @@ func main() {
 		opts: &options{
 			all: *all,
 		},
+		dirs:  -1,
 		infos: make([]*info, len(dirs)),
 	}
 	for i, dir := range dirs {
@@ -52,8 +54,8 @@ func main() {
 		if err != nil {
 			tr.infos[i] = &info{path: dir, err: err}
 		}
-		tr.infos[i] = &info{path: path, tr: tr}
+		tr.infos[i] = &info{path: path, depth: 0}
 	}
 	tr.visit() // visit all infos
-	tr.print() // print based on options format
+	//tr.print() // print based on options format
 }
