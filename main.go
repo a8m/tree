@@ -3,7 +3,6 @@ package main
 import (
 	"flag"
 	"fmt"
-	"path/filepath"
 )
 
 type options struct {
@@ -20,10 +19,8 @@ type tree struct {
 // Call visit
 func (t *tree) visit() {
 	for _, inf := range t.infos {
-		if inf.err == nil {
-			d, f := inf.visit(t.opts)
-			t.dirs, t.files = t.dirs+d-1, t.files+f
-		}
+		d, f := inf.visit(t.opts)
+		t.dirs, t.files = t.dirs+d-1, t.files+f
 	}
 }
 
@@ -54,11 +51,7 @@ func main() {
 		infos: make([]*info, len(dirs)),
 	}
 	for i, dir := range dirs {
-		path, err := filepath.Abs(dir)
-		if err != nil {
-			tr.infos[i] = &info{path: dir, err: err}
-		}
-		tr.infos[i] = &info{path: path, rpath: dir}
+		tr.infos[i] = &info{path: dir}
 	}
 	tr.visit() // visit all infos
 	tr.print() // print based on options format

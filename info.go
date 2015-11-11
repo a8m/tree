@@ -10,7 +10,6 @@ import (
 type info struct {
 	os.FileInfo
 	path  string
-	rpath string
 	depth int
 	err   error
 	infos []*info
@@ -57,7 +56,7 @@ func (inf *info) visit(opts *options) (dirs, files int) {
 
 func (inf *info) print(indent string) {
 	if inf.depth == 0 {
-		fmt.Println(inf.rpath)
+		fmt.Println(inf.path)
 	} else {
 		fmt.Println(inf.Name())
 	}
