@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
@@ -9,8 +10,9 @@ import (
 type info struct {
 	os.FileInfo
 	path  string
-	err   error
+	rpath string
 	depth int
+	err   error
 	infos []*info
 }
 
@@ -53,6 +55,20 @@ func (inf *info) visit(opts *options) (dirs, files int) {
 	return dirs + 1, files
 }
 
-func (inf *info) print() {
-
+func (inf *info) print(indent string) {
+	if inf.depth == 0 {
+		fmt.Println(inf.rpath)
+	} else {
+		fmt.Println(inf.Name())
+	}
+	add := "│   "
+	for i, _inf := range inf.infos {
+		if i == len(inf.infos)-1 {
+			fmt.Printf(indent + "└── ")
+			add = "    "
+		} else {
+			fmt.Printf(indent + "├── ")
+		}
+		_inf.print(indent + add)
+	}
 }
