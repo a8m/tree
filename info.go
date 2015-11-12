@@ -55,6 +55,11 @@ func (inf *info) visit(opts *options) (dirs, files int) {
 }
 
 func (inf *info) print(indent string) {
+	if inf.err != nil {
+		err := strings.Split(inf.err.Error(), ": ")[1]
+		fmt.Printf("%s [%s]\n", inf.path, err)
+		return
+	}
 	if inf.depth == 0 {
 		fmt.Println(inf.path)
 	} else {

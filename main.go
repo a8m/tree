@@ -12,28 +12,15 @@ type options struct {
 
 type tree struct {
 	opts        *options
-	infos       []*info
 	dirs, files int
-}
-
-// Call visit
-func (t *tree) visit() {
-	for _, inf := range t.infos {
-		d, f := inf.visit(t.opts)
-		t.dirs, t.files = t.dirs+d-1, t.files+f
-	}
-}
-
-func (t *tree) print() {
-	for _, inf := range t.infos {
-		inf.print("")
-	}
-	fmt.Printf("\n%d directories, %d files\n", t.dirs, t.files)
 }
 
 var (
 	a = flag.Bool("a", false, "")
 	d = flag.Bool("d", false, "")
+	f = flag.Bool("f", false, "")
+	s = flag.Bool("s", false, "")
+	h = flag.Bool("h", false, "")
 )
 
 func main() {
@@ -48,11 +35,13 @@ func main() {
 			all:      *a,
 			dirsOnly: *d,
 		},
-		infos: make([]*info, len(dirs)),
 	}
-	for i, dir := range dirs {
-		tr.infos[i] = &info{path: dir}
+	for _, dir := range dirs {
+		inf := &info{path: dir}
+		if d, f := inf.visit(tr.opts); inf.err == nil {
+			tr.dirs, tr.files = tr.dirs+d-1, tr.files+f
+		}
+		inf.print("")
 	}
-	tr.visit() // visit all infos
-	tr.print() // print based on options format
+	fmt.Printf("\n%d directories, %d files\n", tr.dirs, tr.files)
 }
