@@ -10,11 +10,6 @@ type options struct {
 	dirsOnly bool
 }
 
-type tree struct {
-	opts        *options
-	dirs, files int
-}
-
 var (
 	a = flag.Bool("a", false, "")
 	d = flag.Bool("d", false, "")
@@ -24,24 +19,23 @@ var (
 )
 
 func main() {
-	flag.Parse()
+	var nd, nf int
 	var dirs = []string{"."}
+	flag.Parse()
 	// Make it work with leading dirs
 	if args := flag.Args(); len(args) > 0 {
 		dirs = args
 	}
-	tr := &tree{
-		opts: &options{
-			all:      *a,
-			dirsOnly: *d,
-		},
+	opts := &options{
+		all:      *a,
+		dirsOnly: *d,
 	}
 	for _, dir := range dirs {
 		inf := &info{path: dir}
-		if d, f := inf.visit(tr.opts); inf.err == nil {
-			tr.dirs, tr.files = tr.dirs+d-1, tr.files+f
+		if d, f := inf.visit(opts); inf.err == nil {
+			nd, nf = nd+d-1, nf+f
 		}
 		inf.print("")
 	}
-	fmt.Printf("\n%d directories, %d files\n", tr.dirs, tr.files)
+	fmt.Printf("\n%d directories, %d files\n", nd, nf)
 }
