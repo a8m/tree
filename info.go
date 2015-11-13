@@ -40,6 +40,7 @@ func (inf *info) visit(opts *options) (dirs, files int) {
 	}
 	inf.infos = make([]*info, 0)
 	for _, name := range names {
+		// "all" option
 		if !opts.all && strings.HasPrefix(name, ".") {
 			continue
 		}
@@ -47,8 +48,12 @@ func (inf *info) visit(opts *options) (dirs, files int) {
 			path:  filepath.Join(inf.path, name),
 			depth: inf.depth + 1,
 		}
-		inf.infos = append(inf.infos, _inf)
 		d, f := _inf.visit(opts)
+		// "dirs only" option
+		if opts.dirsOnly && !_inf.IsDir() {
+			continue
+		}
+		inf.infos = append(inf.infos, _inf)
 		dirs, files = dirs+d, files+f
 	}
 	return dirs + 1, files
