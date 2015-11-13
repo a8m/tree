@@ -37,5 +37,10 @@ func main() {
 		}
 		inf.print("")
 	}
-	fmt.Printf("\n%d directories, %d files\n", nd, nf)
+	// print footer
+	footer := fmt.Sprintf("\n%d directories", nd)
+	if !opts.dirsOnly {
+		footer += fmt.Sprintf(", %d files", nf)
+	}
+	fmt.Println(footer)
 }
