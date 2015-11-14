@@ -59,13 +59,14 @@ func (inf *info) visit(opts *options) (dirs, files int) {
 	return dirs + 1, files
 }
 
-func (inf *info) print(indent string) {
+func (inf *info) print(indent string, opts *options) {
 	if inf.err != nil {
 		err := strings.Split(inf.err.Error(), ": ")[1]
 		fmt.Printf("%s [%s]\n", inf.path, err)
 		return
 	}
-	if inf.depth == 0 {
+	// Print name/path
+	if inf.depth == 0 || opts.fullPath {
 		fmt.Println(inf.path)
 	} else {
 		fmt.Println(inf.Name())
@@ -78,6 +79,6 @@ func (inf *info) print(indent string) {
 		} else {
 			fmt.Printf(indent + "├── ")
 		}
-		_inf.print(indent + add)
+		_inf.print(indent+add, opts)
 	}
 }
