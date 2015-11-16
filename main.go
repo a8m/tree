@@ -8,6 +8,9 @@ import (
 type options struct {
 	all      bool
 	dirsOnly bool
+	fullPath bool
+	byteSize bool
+	unitSize bool
 }
 
 var (
@@ -29,13 +32,16 @@ func main() {
 	opts := &options{
 		all:      *a,
 		dirsOnly: *d,
+		fullPath: *f,
+		byteSize: *s,
+		unitSize: *h,
 	}
 	for _, dir := range dirs {
 		inf := &info{path: dir}
 		if d, f := inf.visit(opts); inf.err == nil {
 			nd, nf = nd+d-1, nf+f
 		}
-		inf.print("")
+		inf.print("", opts)
 	}
 	// print footer
 	footer := fmt.Sprintf("\n%d directories", nd)
