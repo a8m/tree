@@ -15,8 +15,12 @@ type info struct {
 	infos []*info
 }
 
-//Think/Write pusodue code
-//what is the right way to write this function...
+type fs interface {
+	Stat(path string) *FileInfo
+	ReadDir(path string) []string
+}
+
+// Visit fn
 func (inf *info) visit(opts *options) (dirs, files int) {
 	fi, err := os.Stat(inf.path)
 	if err != nil {
