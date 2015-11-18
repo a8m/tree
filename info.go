@@ -15,14 +15,14 @@ type info struct {
 	infos []*info
 }
 
-type fs interface {
-	Stat(path string) *FileInfo
-	ReadDir(path string) []string
+type Fs interface {
+	Stat(path string) (os.FileInfo, error)
+	ReadDir(path string) ([]string, error)
 }
 
 // Visit fn
 func (inf *info) visit(opts *options) (dirs, files int) {
-	fi, err := os.Stat(inf.path)
+	fi, err := opts.fs.Stat(inf.path)
 	if err != nil {
 		inf.err = err
 		return
@@ -31,13 +31,7 @@ func (inf *info) visit(opts *options) (dirs, files int) {
 	if !fi.IsDir() {
 		return 0, 1
 	}
-	dir, err := os.Open(inf.path)
-	if err != nil {
-		inf.err = err
-		return
-	}
-	names, err := dir.Readdirnames(-1)
-	dir.Close()
+	names, err := opts.fs.ReadDir(inf.path)
 	if err != nil {
 		inf.err = err
 		return
