@@ -63,34 +63,39 @@ func (inf *info) print(indent string, opts *options) {
 		fmt.Printf("%s [%s]\n", inf.path, err)
 		return
 	}
-	var name, size, props string
+	if !inf.IsDir() {
+		var props []string
+		// Mode
+		if opts.fileMode {
+			props = append(props, inf.Mode().String())
+		}
+		// Size
+		if opts.byteSize || opts.unitSize {
+			var size string
+			var pad int
+			if opts.unitSize {
+				size = formatBytes(inf.Size())
+				pad = 4
+			} else {
+				size = fmt.Sprintf("%d", inf.Size())
+				pad = 11
+			}
+			if gap := pad - len(size); gap > 0 {
+				size = strings.Repeat(" ", gap) + size
+			}
+			props = append(props, size)
+		}
+		// Print properties
+		if len(props) > 0 {
+			fmt.Printf("[%s]  ", strings.Join(props, " "))
+		}
+	}
 	// name/path
+	var name string
 	if inf.depth == 0 || opts.fullPath {
 		name = inf.path
 	} else {
 		name = inf.Name()
-	}
-	if !inf.IsDir() {
-		if opts.fileMode {
-			props += inf.Mode().String()
-		}
-		if opts.byteSize {
-			size = fmt.Sprintf("%d", inf.Size())
-			if pad := 11 - len(size); pad > 0 {
-				size = strings.Repeat(" ", pad) + size
-			}
-		}
-		if opts.unitSize {
-			size = formatBytes(inf.Size())
-			if pad := 4 - len(size); pad > 0 {
-				size = strings.Repeat(" ", pad) + size
-			}
-		}
-		props += size
-		// Print properties
-		if len(props) > 0 {
-			fmt.Printf("[%s]  ", props)
-		}
 	}
 	// Print file details
 	fmt.Println(name)
