@@ -13,6 +13,7 @@ type options struct {
 	fullPath bool
 	byteSize bool
 	unitSize bool
+	fileMode bool
 }
 
 var (
@@ -21,6 +22,7 @@ var (
 	f = flag.Bool("f", false, "")
 	s = flag.Bool("s", false, "")
 	h = flag.Bool("h", false, "")
+	p = flag.Bool("p", false, "")
 )
 
 type fs struct{}
@@ -57,6 +59,7 @@ func main() {
 		fullPath: *f,
 		byteSize: *s,
 		unitSize: *h,
+		fileMode: *p,
 	}
 	for _, dir := range dirs {
 		inf := &info{path: dir}

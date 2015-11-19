@@ -63,7 +63,7 @@ func (inf *info) print(indent string, opts *options) {
 		fmt.Printf("%s [%s]\n", inf.path, err)
 		return
 	}
-	var name, size string
+	var name, size, props string
 	// name/path
 	if inf.depth == 0 || opts.fullPath {
 		name = inf.path
@@ -71,6 +71,9 @@ func (inf *info) print(indent string, opts *options) {
 		name = inf.Name()
 	}
 	if !inf.IsDir() {
+		if opts.fileMode {
+			props += inf.Mode().String()
+		}
 		if opts.byteSize {
 			size = fmt.Sprintf("%d", inf.Size())
 			if pad := 11 - len(size); pad > 0 {
@@ -83,8 +86,9 @@ func (inf *info) print(indent string, opts *options) {
 				size = strings.Repeat(" ", pad) + size
 			}
 		}
+		props += size
 		// Print properties
-		if props := size; len(props) > 0 {
+		if len(props) > 0 {
 			fmt.Printf("[%s]  ", props)
 		}
 	}
