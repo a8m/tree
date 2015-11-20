@@ -81,6 +81,12 @@ func (inf *info) print(indent string, opts *options) {
 				props = append(props, fmt.Sprintf("%-8s", u.Username))
 			}
 		}
+		// Gorup/Gid
+		// TODO: support groupname
+		if opts.showGid {
+			gid := strconv.Itoa(int(inf.Sys().(*syscall.Stat_t).Gid))
+			props = append(props, fmt.Sprintf("%-4s", gid))
+		}
 		// Size
 		if opts.byteSize || opts.unitSize {
 			var size string
