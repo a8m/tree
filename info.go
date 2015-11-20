@@ -3,8 +3,11 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/user"
 	"path/filepath"
+	"strconv"
 	"strings"
+	"syscall"
 )
 
 type info struct {
@@ -69,19 +72,22 @@ func (inf *info) print(indent string, opts *options) {
 		if opts.fileMode {
 			props = append(props, inf.Mode().String())
 		}
+		// Owner/Uid
+		if opts.showUid {
+			uid := strconv.Itoa(int(inf.Sys().(*syscall.Stat_t).Uid))
+			if u, err := user.LookupId(uid); err != nil {
+				props = append(props, fmt.Sprintf("%-8s", uid))
+			} else {
+				props = append(props, fmt.Sprintf("%-8s", u.Username))
+			}
+		}
 		// Size
 		if opts.byteSize || opts.unitSize {
 			var size string
-			var pad int
 			if opts.unitSize {
-				size = formatBytes(inf.Size())
-				pad = 4
+				size = fmt.Sprintf("%4s", formatBytes(inf.Size()))
 			} else {
-				size = fmt.Sprintf("%d", inf.Size())
-				pad = 11
-			}
-			if gap := pad - len(size); gap > 0 {
-				size = strings.Repeat(" ", gap) + size
+				size = fmt.Sprintf("%11d", inf.Size())
 			}
 			props = append(props, size)
 		}
