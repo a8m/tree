@@ -68,6 +68,10 @@ func (inf *info) print(indent string, opts *options) {
 	}
 	if !inf.IsDir() {
 		var props []string
+		if opts.inodes {
+			ino := inf.Sys().(*syscall.Stat_t).Ino
+			props = append(props, fmt.Sprintf("%d", ino))
+		}
 		// Mode
 		if opts.fileMode {
 			props = append(props, inf.Mode().String())

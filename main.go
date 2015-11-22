@@ -18,19 +18,21 @@ type options struct {
 	showGid  bool
 	lastMod  bool
 	quotes   bool
+	inodes   bool
 }
 
 var (
-	a = flag.Bool("a", false, "")
-	d = flag.Bool("d", false, "")
-	f = flag.Bool("f", false, "")
-	s = flag.Bool("s", false, "")
-	h = flag.Bool("h", false, "")
-	p = flag.Bool("p", false, "")
-	u = flag.Bool("u", false, "")
-	g = flag.Bool("g", false, "")
-	Q = flag.Bool("Q", false, "")
-	D = flag.Bool("D", false, "")
+	a      = flag.Bool("a", false, "")
+	d      = flag.Bool("d", false, "")
+	f      = flag.Bool("f", false, "")
+	s      = flag.Bool("s", false, "")
+	h      = flag.Bool("h", false, "")
+	p      = flag.Bool("p", false, "")
+	u      = flag.Bool("u", false, "")
+	g      = flag.Bool("g", false, "")
+	Q      = flag.Bool("Q", false, "")
+	D      = flag.Bool("D", false, "")
+	inodes = flag.Bool("inodes", false, "")
 )
 
 type fs struct{}
@@ -72,6 +74,7 @@ func main() {
 		showGid:  *g,
 		lastMod:  *D,
 		quotes:   *Q,
+		inodes:   *inodes,
 	}
 	for _, dir := range dirs {
 		inf := &info{path: dir}
