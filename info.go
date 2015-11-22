@@ -68,9 +68,14 @@ func (inf *info) print(indent string, opts *options) {
 	}
 	if !inf.IsDir() {
 		var props []string
+		var stat = inf.Sys().(*syscall.Stat_t)
+		// inodes
 		if opts.inodes {
-			ino := inf.Sys().(*syscall.Stat_t).Ino
-			props = append(props, fmt.Sprintf("%d", ino))
+			props = append(props, fmt.Sprintf("%d", stat.Ino))
+		}
+		// device
+		if opts.device {
+			props = append(props, fmt.Sprintf("%3d", stat.Dev))
 		}
 		// Mode
 		if opts.fileMode {
@@ -78,7 +83,7 @@ func (inf *info) print(indent string, opts *options) {
 		}
 		// Owner/Uid
 		if opts.showUid {
-			uid := strconv.Itoa(int(inf.Sys().(*syscall.Stat_t).Uid))
+			uid := strconv.Itoa(int(stat.Uid))
 			if u, err := user.LookupId(uid); err != nil {
 				props = append(props, fmt.Sprintf("%-8s", uid))
 			} else {
@@ -88,7 +93,7 @@ func (inf *info) print(indent string, opts *options) {
 		// Gorup/Gid
 		// TODO: support groupname
 		if opts.showGid {
-			gid := strconv.Itoa(int(inf.Sys().(*syscall.Stat_t).Gid))
+			gid := strconv.Itoa(int(stat.Gid))
 			props = append(props, fmt.Sprintf("%-4s", gid))
 		}
 		// Size

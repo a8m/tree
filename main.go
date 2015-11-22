@@ -19,6 +19,7 @@ type options struct {
 	lastMod  bool
 	quotes   bool
 	inodes   bool
+	device   bool
 }
 
 var (
@@ -33,6 +34,7 @@ var (
 	Q      = flag.Bool("Q", false, "")
 	D      = flag.Bool("D", false, "")
 	inodes = flag.Bool("inodes", false, "")
+	device = flag.Bool("device", false, "")
 )
 
 type fs struct{}
@@ -75,6 +77,7 @@ func main() {
 		lastMod:  *D,
 		quotes:   *Q,
 		inodes:   *inodes,
+		device:   *device,
 	}
 	for _, dir := range dirs {
 		inf := &info{path: dir}
