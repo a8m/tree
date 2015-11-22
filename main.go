@@ -16,6 +16,8 @@ type options struct {
 	fileMode bool
 	showUid  bool
 	showGid  bool
+	lastMod  bool
+	quotes   bool
 }
 
 var (
@@ -27,6 +29,8 @@ var (
 	p = flag.Bool("p", false, "")
 	u = flag.Bool("u", false, "")
 	g = flag.Bool("g", false, "")
+	Q = flag.Bool("Q", false, "")
+	D = flag.Bool("D", false, "")
 )
 
 type fs struct{}
@@ -66,6 +70,8 @@ func main() {
 		fileMode: *p,
 		showUid:  *u,
 		showGid:  *g,
+		lastMod:  *D,
+		quotes:   *Q,
 	}
 	for _, dir := range dirs {
 		inf := &info{path: dir}

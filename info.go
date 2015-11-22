@@ -97,6 +97,10 @@ func (inf *info) print(indent string, opts *options) {
 			}
 			props = append(props, size)
 		}
+		// Last modification
+		if opts.lastMod {
+			props = append(props, inf.ModTime().Format("Jan 02 15:04"))
+		}
 		// Print properties
 		if len(props) > 0 {
 			fmt.Printf("[%s]  ", strings.Join(props, " "))
@@ -108,6 +112,10 @@ func (inf *info) print(indent string, opts *options) {
 		name = inf.path
 	} else {
 		name = inf.Name()
+	}
+	// Quotes
+	if opts.quotes {
+		name = fmt.Sprintf("\"%s\"", name)
 	}
 	// Print file details
 	fmt.Println(name)
