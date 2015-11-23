@@ -4,23 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"os"
-)
 
-type options struct {
-	fs       Fs
-	all      bool
-	dirsOnly bool
-	fullPath bool
-	byteSize bool
-	unitSize bool
-	fileMode bool
-	showUid  bool
-	showGid  bool
-	lastMod  bool
-	quotes   bool
-	inodes   bool
-	device   bool
-}
+	"github.com/a8m/tree/node"
+)
 
 var (
 	a      = flag.Bool("a", false, "")
@@ -64,31 +50,31 @@ func main() {
 	if args := flag.Args(); len(args) > 0 {
 		dirs = args
 	}
-	opts := &options{
-		fs:       new(fs),
-		all:      *a,
-		dirsOnly: *d,
-		fullPath: *f,
-		byteSize: *s,
-		unitSize: *h,
-		fileMode: *p,
-		showUid:  *u,
-		showGid:  *g,
-		lastMod:  *D,
-		quotes:   *Q,
-		inodes:   *inodes,
-		device:   *device,
+	opts := &node.Options{
+		Fs:       new(fs),
+		All:      *a,
+		DirsOnly: *d,
+		FullPath: *f,
+		ByteSize: *s,
+		UnitSize: *h,
+		FileMode: *p,
+		ShowUid:  *u,
+		ShowGid:  *g,
+		LastMod:  *D,
+		Quotes:   *Q,
+		Inodes:   *inodes,
+		Device:   *device,
 	}
 	for _, dir := range dirs {
-		inf := &info{path: dir}
-		if d, f := inf.visit(opts); inf.err == nil {
+		inf := node.New(dir)
+		if d, f := inf.Visit(opts); f != 0 {
 			nd, nf = nd+d-1, nf+f
 		}
-		inf.print("", opts)
+		inf.Print("", opts)
 	}
 	// print footer
 	footer := fmt.Sprintf("\n%d directories", nd)
-	if !opts.dirsOnly {
+	if !opts.DirsOnly {
 		footer += fmt.Sprintf(", %d files", nf)
 	}
 	fmt.Println(footer)
