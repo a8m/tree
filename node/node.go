@@ -39,6 +39,8 @@ type Options struct {
 	Device   bool
 }
 
+type CompFunc func(f1, f2 os.FileInfo)
+
 // New get path and create new node
 func New(path string) *Node {
 	return &Node{path: path}
