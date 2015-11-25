@@ -25,6 +25,7 @@ var (
 	// Sort
 	U = flag.Bool("U", false, "")
 	t = flag.Bool("t", false, "")
+	c = flag.Bool("c", false, "")
 )
 
 type fs struct{}
@@ -69,8 +70,9 @@ func main() {
 		Inodes:   *inodes,
 		Device:   *device,
 		// Sort
-		NoSort:  *U,
-		ModSort: *t,
+		NoSort:    *U,
+		ModSort:   *t,
+		CTimeSort: *c,
 	}
 	for _, dir := range dirs {
 		inf := node.New(dir)

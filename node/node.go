@@ -45,9 +45,10 @@ type Options struct {
 	Inodes   bool
 	Device   bool
 	// Sort
-	NoSort  bool
-	VerSort bool
-	ModSort bool
+	NoSort    bool
+	VerSort   bool
+	ModSort   bool
+	CTimeSort bool
 }
 
 // New get path and create new node
@@ -93,6 +94,9 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 	var fn SortFunc
 	if opts.ModSort {
 		fn = ModSort
+	}
+	if opts.CTimeSort {
+		fn = CTimeSort
 	}
 	if !opts.NoSort && fn != nil {
 		sort.Sort(ByFunc{node.nodes, fn})
