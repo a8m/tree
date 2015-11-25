@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	//	"sort"
 	"strconv"
 	"strings"
 	"syscall"
@@ -15,8 +16,13 @@ type Node struct {
 	path  string
 	depth int
 	err   error
-	nodes []*Node
+	nodes Nodes
 }
+
+type Nodes []*Node
+
+func (n Nodes) Len() int      { return len(n) }
+func (n Nodes) Swap(i, j int) { n[i], n[j] = n[j], n[i] }
 
 type Fs interface {
 	Stat(path string) (os.FileInfo, error)
@@ -24,7 +30,8 @@ type Fs interface {
 }
 
 type Options struct {
-	Fs       Fs
+	Fs Fs
+	// Files
 	All      bool
 	DirsOnly bool
 	FullPath bool
@@ -37,9 +44,11 @@ type Options struct {
 	Quotes   bool
 	Inodes   bool
 	Device   bool
+	// Sort
+	NoSort  bool
+	VerSort bool
+	ModSort bool
 }
-
-type CompFunc func(f1, f2 os.FileInfo)
 
 // New get path and create new node
 func New(path string) *Node {
@@ -62,7 +71,7 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 		node.err = err
 		return
 	}
-	node.nodes = make([]*Node, 0)
+	node.nodes = make(Nodes, 0)
 	for _, name := range names {
 		// "all" option
 		if !opts.All && strings.HasPrefix(name, ".") {

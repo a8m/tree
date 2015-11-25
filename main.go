@@ -28,7 +28,6 @@ type fs struct{}
 func (f *fs) Stat(path string) (os.FileInfo, error) {
 	return os.Stat(path)
 }
-
 func (f *fs) ReadDir(path string) ([]string, error) {
 	dir, err := os.Open(path)
 	if err != nil {
@@ -51,7 +50,8 @@ func main() {
 		dirs = args
 	}
 	opts := &node.Options{
-		Fs:       new(fs),
+		Fs: new(fs),
+		// Files
 		All:      *a,
 		DirsOnly: *d,
 		FullPath: *f,
@@ -64,6 +64,7 @@ func main() {
 		Quotes:   *Q,
 		Inodes:   *inodes,
 		Device:   *device,
+		// Sort
 	}
 	for _, dir := range dirs {
 		inf := node.New(dir)
