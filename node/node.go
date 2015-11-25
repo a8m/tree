@@ -94,14 +94,15 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 	}
 	// Sorting
 	var fn SortFunc
-	if opts.ModSort {
+	switch {
+	case opts.ModSort:
 		fn = ModSort
-	}
-	if opts.CTimeSort {
+	case opts.CTimeSort:
 		fn = CTimeSort
-	}
-	if opts.DirSort {
+	case opts.DirSort:
 		fn = DirSort
+	case opts.VerSort:
+		fn = VerSort
 	}
 	if !opts.NoSort && fn != nil {
 		if opts.ReverSort {

@@ -24,6 +24,7 @@ var (
 	device = flag.Bool("device", false, "")
 	// Sort
 	U         = flag.Bool("U", false, "")
+	v         = flag.Bool("v", false, "")
 	t         = flag.Bool("t", false, "")
 	c         = flag.Bool("c", false, "")
 	r         = flag.Bool("r", false, "")
@@ -73,6 +74,7 @@ func main() {
 		Device:   *device,
 		// Sort
 		NoSort:    *U,
+		VerSort:   *v,
 		ModSort:   *t,
 		CTimeSort: *c,
 		ReverSort: *r,
