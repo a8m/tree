@@ -5,7 +5,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
-	//	"sort"
+	"sort"
 	"strconv"
 	"strings"
 	"syscall"
@@ -88,6 +88,14 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 		}
 		node.nodes = append(node.nodes, nnode)
 		dirs, files = dirs+d, files+f
+	}
+	// Sorting
+	var fn SortFunc
+	if opts.ModSort {
+		fn = ModSort
+	}
+	if !opts.NoSort && fn != nil {
+		sort.Sort(ByFunc{node.nodes, fn})
 	}
 	return dirs + 1, files
 }

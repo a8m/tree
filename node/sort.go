@@ -6,11 +6,15 @@ import (
 
 type ByFunc struct {
 	Nodes
-	Fn LessFn
+	Fn SortFunc
 }
 
 func (b ByFunc) Less(i, j int) bool {
 	return b.Fn(b.Nodes[i].FileInfo, b.Nodes[j].FileInfo)
 }
 
-type LessFn func(f1, f2 os.FileInfo) bool
+type SortFunc func(f1, f2 os.FileInfo) bool
+
+func ModSort(f1, f2 os.FileInfo) bool {
+	return f1.ModTime().Before(f2.ModTime())
+}

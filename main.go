@@ -9,6 +9,7 @@ import (
 )
 
 var (
+	// Files
 	a      = flag.Bool("a", false, "")
 	d      = flag.Bool("d", false, "")
 	f      = flag.Bool("f", false, "")
@@ -21,6 +22,9 @@ var (
 	D      = flag.Bool("D", false, "")
 	inodes = flag.Bool("inodes", false, "")
 	device = flag.Bool("device", false, "")
+	// Sort
+	U = flag.Bool("U", false, "")
+	t = flag.Bool("t", false, "")
 )
 
 type fs struct{}
@@ -65,6 +69,8 @@ func main() {
 		Inodes:   *inodes,
 		Device:   *device,
 		// Sort
+		NoSort:  *U,
+		ModSort: *t,
 	}
 	for _, dir := range dirs {
 		inf := node.New(dir)
