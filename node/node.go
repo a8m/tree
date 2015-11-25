@@ -49,6 +49,7 @@ type Options struct {
 	VerSort   bool
 	ModSort   bool
 	CTimeSort bool
+	ReverSort bool
 }
 
 // New get path and create new node
@@ -99,7 +100,11 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 		fn = CTimeSort
 	}
 	if !opts.NoSort && fn != nil {
-		sort.Sort(ByFunc{node.nodes, fn})
+		if opts.ReverSort {
+			sort.Sort(sort.Reverse(ByFunc{node.nodes, fn}))
+		} else {
+			sort.Sort(ByFunc{node.nodes, fn})
+		}
 	}
 	return dirs + 1, files
 }

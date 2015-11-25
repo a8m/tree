@@ -26,6 +26,7 @@ var (
 	U = flag.Bool("U", false, "")
 	t = flag.Bool("t", false, "")
 	c = flag.Bool("c", false, "")
+	r = flag.Bool("r", false, "")
 )
 
 type fs struct{}
@@ -73,6 +74,7 @@ func main() {
 		NoSort:    *U,
 		ModSort:   *t,
 		CTimeSort: *c,
+		ReverSort: *r,
 	}
 	for _, dir := range dirs {
 		inf := node.New(dir)
