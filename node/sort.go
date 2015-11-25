@@ -24,3 +24,7 @@ func CTimeSort(f1, f2 os.FileInfo) bool {
 	s1, s2 := f1.Sys().(*syscall.Stat_t), f2.Sys().(*syscall.Stat_t)
 	return s1.Ctimespec.Sec < s2.Ctimespec.Sec
 }
+
+func DirSort(f1, f2 os.FileInfo) bool {
+	return f1.IsDir() && !f2.IsDir()
+}

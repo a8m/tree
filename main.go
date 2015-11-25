@@ -23,10 +23,11 @@ var (
 	inodes = flag.Bool("inodes", false, "")
 	device = flag.Bool("device", false, "")
 	// Sort
-	U = flag.Bool("U", false, "")
-	t = flag.Bool("t", false, "")
-	c = flag.Bool("c", false, "")
-	r = flag.Bool("r", false, "")
+	U         = flag.Bool("U", false, "")
+	t         = flag.Bool("t", false, "")
+	c         = flag.Bool("c", false, "")
+	r         = flag.Bool("r", false, "")
+	dirsfirst = flag.Bool("dirsfirst", false, "")
 )
 
 type fs struct{}
@@ -75,6 +76,7 @@ func main() {
 		ModSort:   *t,
 		CTimeSort: *c,
 		ReverSort: *r,
+		DirSort:   *dirsfirst,
 	}
 	for _, dir := range dirs {
 		inf := node.New(dir)
