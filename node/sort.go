@@ -33,7 +33,9 @@ func SizeSort(f1, f2 os.FileInfo) bool {
 	return f1.Size() < f2.Size()
 }
 
-//func NameSort(f1, f2 os.FileInfo) bool
+func NameSort(f1, f2 os.FileInfo) bool {
+	return f1.Name() < f2.Name()
+}
 
 func VerSort(f1, f2 os.FileInfo) bool {
 	return NaturalLess(f1.Name(), f2.Name())

@@ -107,6 +107,8 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 		fn = VerSort
 	case opts.SizeSort:
 		fn = SizeSort
+	case opts.NameSort:
+		fn = NameSort
 	}
 	if !opts.NoSort && fn != nil {
 		if opts.ReverSort {
