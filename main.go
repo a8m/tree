@@ -29,6 +29,7 @@ var (
 	c         = flag.Bool("c", false, "")
 	r         = flag.Bool("r", false, "")
 	dirsfirst = flag.Bool("dirsfirst", false, "")
+	sort      = flag.String("sort", "", "")
 )
 
 type fs struct{}
@@ -74,11 +75,13 @@ func main() {
 		Device:   *device,
 		// Sort
 		NoSort:    *U,
-		VerSort:   *v,
-		ModSort:   *t,
-		CTimeSort: *c,
 		ReverSort: *r,
 		DirSort:   *dirsfirst,
+		VerSort:   *v || *sort == "version",
+		ModSort:   *t || *sort == "mtime",
+		CTimeSort: *c || *sort == "ctime",
+		NameSort:  *sort == "name",
+		SizeSort:  *sort == "size",
 	}
 	for _, dir := range dirs {
 		inf := node.New(dir)

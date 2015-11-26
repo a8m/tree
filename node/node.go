@@ -49,6 +49,8 @@ type Options struct {
 	VerSort   bool
 	ModSort   bool
 	DirSort   bool
+	NameSort  bool
+	SizeSort  bool
 	CTimeSort bool
 	ReverSort bool
 }
@@ -103,6 +105,8 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 		fn = DirSort
 	case opts.VerSort:
 		fn = VerSort
+	case opts.SizeSort:
+		fn = SizeSort
 	}
 	if !opts.NoSort && fn != nil {
 		if opts.ReverSort {
