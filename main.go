@@ -30,6 +30,8 @@ var (
 	r         = flag.Bool("r", false, "")
 	dirsfirst = flag.Bool("dirsfirst", false, "")
 	sort      = flag.String("sort", "", "")
+	// Graphics
+	i = flag.Bool("i", false, "")
 )
 
 type fs struct{}
@@ -82,6 +84,8 @@ func main() {
 		CTimeSort: *c || *sort == "ctime",
 		NameSort:  *sort == "name",
 		SizeSort:  *sort == "size",
+		// Graphics
+		NoIndent: *i,
 	}
 	for _, dir := range dirs {
 		inf := node.New(dir)

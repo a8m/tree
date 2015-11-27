@@ -53,6 +53,8 @@ type Options struct {
 	SizeSort  bool
 	CTimeSort bool
 	ReverSort bool
+	// Graphics
+	NoIndent bool
 }
 
 // New get path and create new node
@@ -190,11 +192,15 @@ func (node *Node) Print(indent string, opts *Options) {
 	fmt.Println(name)
 	add := "│   "
 	for i, nnode := range node.nodes {
-		if i == len(node.nodes)-1 {
-			fmt.Printf(indent + "└── ")
-			add = "    "
+		if opts.NoIndent {
+			add = ""
 		} else {
-			fmt.Printf(indent + "├── ")
+			if i == len(node.nodes)-1 {
+				fmt.Printf(indent + "└── ")
+				add = "    "
+			} else {
+				fmt.Printf(indent + "├── ")
+			}
 		}
 		nnode.Print(indent+add, opts)
 	}
