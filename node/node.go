@@ -31,10 +31,12 @@ type Fs interface {
 
 type Options struct {
 	Fs Fs
-	// Files
-	All      bool
-	DirsOnly bool
-	FullPath bool
+	// List
+	All       bool
+	DirsOnly  bool
+	FullPath  bool
+	DeepLevel int
+	// File
 	ByteSize bool
 	UnitSize bool
 	FileMode bool
@@ -79,6 +81,10 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 		return
 	}
 	node.nodes = make(Nodes, 0)
+	// DeepLevel option
+	if opts.DeepLevel > 0 && opts.DeepLevel <= node.depth {
+		return 1, 0
+	}
 	for _, name := range names {
 		// "all" option
 		if !opts.All && strings.HasPrefix(name, ".") {
@@ -97,6 +103,13 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 		dirs, files = dirs+d, files+f
 	}
 	// Sorting
+	if !opts.NoSort {
+		node.sort(opts)
+	}
+	return dirs + 1, files
+}
+
+func (node *Node) sort(opts *Options) {
 	var fn SortFunc
 	switch {
 	case opts.ModSort:
@@ -112,14 +125,13 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 	case opts.NameSort:
 		fn = NameSort
 	}
-	if !opts.NoSort && fn != nil {
+	if fn != nil {
 		if opts.ReverSort {
 			sort.Sort(sort.Reverse(ByFunc{node.nodes, fn}))
 		} else {
 			sort.Sort(ByFunc{node.nodes, fn})
 		}
 	}
-	return dirs + 1, files
 }
 
 func (node *Node) Print(indent string, opts *Options) {

@@ -9,10 +9,12 @@ import (
 )
 
 var (
+	// List
+	a = flag.Bool("a", false, "")
+	d = flag.Bool("d", false, "")
+	f = flag.Bool("f", false, "")
+	L = flag.Int("L", 0, "")
 	// Files
-	a      = flag.Bool("a", false, "")
-	d      = flag.Bool("d", false, "")
-	f      = flag.Bool("f", false, "")
 	s      = flag.Bool("s", false, "")
 	h      = flag.Bool("h", false, "")
 	p      = flag.Bool("p", false, "")
@@ -62,10 +64,12 @@ func main() {
 	}
 	opts := &node.Options{
 		Fs: new(fs),
+		// List
+		All:       *a,
+		DirsOnly:  *d,
+		FullPath:  *f,
+		DeepLevel: *L,
 		// Files
-		All:      *a,
-		DirsOnly: *d,
-		FullPath: *f,
 		ByteSize: *s,
 		UnitSize: *h,
 		FileMode: *p,
