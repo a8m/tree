@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -36,6 +37,8 @@ type Options struct {
 	DirsOnly  bool
 	FullPath  bool
 	DeepLevel int
+	Pattern   string
+	IPattern  string
 	// File
 	ByteSize bool
 	UnitSize bool
@@ -75,16 +78,16 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 	if !fi.IsDir() {
 		return 0, 1
 	}
+	// DeepLevel option
+	if opts.DeepLevel > 0 && opts.DeepLevel <= node.depth {
+		return 1, 0
+	}
 	names, err := opts.Fs.ReadDir(node.path)
 	if err != nil {
 		node.err = err
 		return
 	}
 	node.nodes = make(Nodes, 0)
-	// DeepLevel option
-	if opts.DeepLevel > 0 && opts.DeepLevel <= node.depth {
-		return 1, 0
-	}
 	for _, name := range names {
 		// "all" option
 		if !opts.All && strings.HasPrefix(name, ".") {
@@ -95,9 +98,25 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 			depth: node.depth + 1,
 		}
 		d, f := nnode.Visit(opts)
-		// "dirs only" option
-		if opts.DirsOnly && !nnode.IsDir() {
-			continue
+		if !nnode.IsDir() {
+			// "dirs only" option
+			if opts.DirsOnly {
+				continue
+			}
+			// Pattern matching
+			if opts.Pattern != "" {
+				re, err := regexp.Compile(opts.Pattern)
+				if err == nil && !re.MatchString(name) {
+					continue
+				}
+			}
+			// IPattern matching
+			if opts.IPattern != "" {
+				re, err := regexp.Compile(opts.IPattern)
+				if err == nil && re.MatchString(name) {
+					continue
+				}
+			}
 		}
 		node.nodes = append(node.nodes, nnode)
 		dirs, files = dirs+d, files+f
