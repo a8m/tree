@@ -14,6 +14,8 @@ var (
 	d = flag.Bool("d", false, "")
 	f = flag.Bool("f", false, "")
 	L = flag.Int("L", 0, "")
+	P = flag.String("P", "", "")
+	I = flag.String("I", "", "")
 	// Files
 	s      = flag.Bool("s", false, "")
 	h      = flag.Bool("h", false, "")
@@ -69,6 +71,8 @@ func main() {
 		DirsOnly:  *d,
 		FullPath:  *f,
 		DeepLevel: *L,
+		Pattern:   *P,
+		IPattern:  *I,
 		// Files
 		ByteSize: *s,
 		UnitSize: *h,
@@ -94,7 +98,10 @@ func main() {
 	for _, dir := range dirs {
 		inf := node.New(dir)
 		if d, f := inf.Visit(opts); f != 0 {
-			nd, nf = nd+d-1, nf+f
+			if d > 0 {
+				d -= 1
+			}
+			nd, nf = nd+d, nf+f
 		}
 		inf.Print("", opts)
 	}
