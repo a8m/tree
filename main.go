@@ -10,12 +10,13 @@ import (
 
 var (
 	// List
-	a = flag.Bool("a", false, "")
-	d = flag.Bool("d", false, "")
-	f = flag.Bool("f", false, "")
-	L = flag.Int("L", 0, "")
-	P = flag.String("P", "", "")
-	I = flag.String("I", "", "")
+	a          = flag.Bool("a", false, "")
+	d          = flag.Bool("d", false, "")
+	f          = flag.Bool("f", false, "")
+	ignorecase = flag.Bool("ignore-case", false, "")
+	L          = flag.Int("L", 0, "")
+	P          = flag.String("P", "", "")
+	I          = flag.String("I", "", "")
 	// Files
 	s      = flag.Bool("s", false, "")
 	h      = flag.Bool("h", false, "")
@@ -67,12 +68,13 @@ func main() {
 	opts := &node.Options{
 		Fs: new(fs),
 		// List
-		All:       *a,
-		DirsOnly:  *d,
-		FullPath:  *f,
-		DeepLevel: *L,
-		Pattern:   *P,
-		IPattern:  *I,
+		All:        *a,
+		DirsOnly:   *d,
+		FullPath:   *f,
+		DeepLevel:  *L,
+		Pattern:    *P,
+		IPattern:   *I,
+		IgnoreCase: *ignorecase,
 		// Files
 		ByteSize: *s,
 		UnitSize: *h,

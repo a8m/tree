@@ -33,12 +33,13 @@ type Fs interface {
 type Options struct {
 	Fs Fs
 	// List
-	All       bool
-	DirsOnly  bool
-	FullPath  bool
-	DeepLevel int
-	Pattern   string
-	IPattern  string
+	All        bool
+	DirsOnly   bool
+	FullPath   bool
+	IgnoreCase bool
+	DeepLevel  int
+	Pattern    string
+	IPattern   string
 	// File
 	ByteSize bool
 	UnitSize bool
@@ -103,16 +104,20 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 			if opts.DirsOnly {
 				continue
 			}
+			var rePrefix string
+			if opts.IgnoreCase {
+				rePrefix = "(?i)"
+			}
 			// Pattern matching
 			if opts.Pattern != "" {
-				re, err := regexp.Compile(opts.Pattern)
+				re, err := regexp.Compile(rePrefix + opts.Pattern)
 				if err == nil && !re.MatchString(name) {
 					continue
 				}
 			}
 			// IPattern matching
 			if opts.IPattern != "" {
-				re, err := regexp.Compile(opts.IPattern)
+				re, err := regexp.Compile(rePrefix + opts.IPattern)
 				if err == nil && re.MatchString(name) {
 					continue
 				}
