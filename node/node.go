@@ -40,6 +40,7 @@ type Options struct {
 	DeepLevel  int
 	Pattern    string
 	IPattern   string
+	OutFile    *os.File
 	// File
 	ByteSize bool
 	UnitSize bool
@@ -210,7 +211,7 @@ func (node *Node) Print(indent string, opts *Options) {
 		}
 		// Print properties
 		if len(props) > 0 {
-			fmt.Printf("[%s]  ", strings.Join(props, " "))
+			fmt.Fprintf(opts.OutFile, "[%s]  ", strings.Join(props, " "))
 		}
 	}
 	// name/path
@@ -225,17 +226,17 @@ func (node *Node) Print(indent string, opts *Options) {
 		name = fmt.Sprintf("\"%s\"", name)
 	}
 	// Print file details
-	fmt.Println(name)
+	fmt.Fprintln(opts.OutFile, name)
 	add := "│   "
 	for i, nnode := range node.nodes {
 		if opts.NoIndent {
 			add = ""
 		} else {
 			if i == len(node.nodes)-1 {
-				fmt.Printf(indent + "└── ")
+				fmt.Fprintf(opts.OutFile, indent+"└── ")
 				add = "    "
 			} else {
-				fmt.Printf(indent + "├── ")
+				fmt.Fprintf(opts.OutFile, indent+"├── ")
 			}
 		}
 		nnode.Print(indent+add, opts)

@@ -17,6 +17,7 @@ var (
 	L          = flag.Int("L", 0, "")
 	P          = flag.String("P", "", "")
 	I          = flag.String("I", "", "")
+	o          = flag.String("o", "", "")
 	// Files
 	s      = flag.Bool("s", false, "")
 	h      = flag.Bool("h", false, "")
@@ -65,9 +66,20 @@ func main() {
 	if args := flag.Args(); len(args) > 0 {
 		dirs = args
 	}
+	// Output file
+	var outFile = os.Stdout
+	var err error
+	if *o != "" {
+		outFile, err = os.Create(*o)
+		if err != nil {
+			usageAndExit("invalid filename: " + *o)
+		}
+	}
+	defer outFile.Close()
 	opts := &node.Options{
 		Fs: new(fs),
 		// List
+		OutFile:    outFile,
 		All:        *a,
 		DirsOnly:   *d,
 		FullPath:   *f,
@@ -112,5 +124,15 @@ func main() {
 	if !opts.DirsOnly {
 		footer += fmt.Sprintf(", %d files", nf)
 	}
-	fmt.Println(footer)
+	fmt.Fprintln(outFile, footer)
+}
+
+func usageAndExit(msg string) {
+	if msg != "" {
+		fmt.Fprintf(os.Stderr, msg)
+		fmt.Fprintf(os.Stderr, "\n\n")
+	}
+	flag.Usage()
+	fmt.Fprintf(os.Stderr, "\n")
+	os.Exit(1)
 }
