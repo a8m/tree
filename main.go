@@ -1,11 +1,11 @@
 package main
 
 import (
+	"errors"
 	"flag"
 	"fmt"
-	"os"
-
 	"github.com/a8m/tree/node"
+	"os"
 )
 
 var (
@@ -72,10 +72,20 @@ func main() {
 	if *o != "" {
 		outFile, err = os.Create(*o)
 		if err != nil {
-			usageAndExit("invalid filename: " + *o)
+			errAndExit(err)
 		}
 	}
 	defer outFile.Close()
+	// Check sort-type
+	if *sort != "" {
+		switch *sort {
+		case "version", "mtime", "ctime", "name", "size":
+		default:
+			msg := fmt.Sprintf("sort type '%s' not valid, should be one of: name,version,size,mtime,ctime", *sort)
+			errAndExit(errors.New(msg))
+		}
+	}
+	// Set options
 	opts := &node.Options{
 		Fs: new(fs),
 		// List
@@ -134,5 +144,10 @@ func usageAndExit(msg string) {
 	}
 	flag.Usage()
 	fmt.Fprintf(os.Stderr, "\n")
+	os.Exit(1)
+}
+
+func errAndExit(err error) {
+	fmt.Fprintf(os.Stderr, "tree: \"%s\"\n", err)
 	os.Exit(1)
 }
