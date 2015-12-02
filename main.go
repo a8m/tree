@@ -14,6 +14,7 @@ var (
 	d          = flag.Bool("d", false, "")
 	f          = flag.Bool("f", false, "")
 	ignorecase = flag.Bool("ignore-case", false, "")
+	noreport   = flag.Bool("noreport", false, "")
 	L          = flag.Int("L", 0, "")
 	P          = flag.String("P", "", "")
 	I          = flag.String("I", "", "")
@@ -129,12 +130,14 @@ func main() {
 		}
 		inf.Print("", opts)
 	}
-	// print footer
-	footer := fmt.Sprintf("\n%d directories", nd)
-	if !opts.DirsOnly {
-		footer += fmt.Sprintf(", %d files", nf)
+	// Print footer report
+	if !*noreport {
+		footer := fmt.Sprintf("\n%d directories", nd)
+		if !opts.DirsOnly {
+			footer += fmt.Sprintf(", %d files", nf)
+		}
+		fmt.Fprintln(outFile, footer)
 	}
-	fmt.Fprintln(outFile, footer)
 }
 
 func usageAndExit(msg string) {
