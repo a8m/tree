@@ -2,6 +2,7 @@ package node
 
 import (
 	"fmt"
+	"io"
 	"os"
 	"os/user"
 	"path/filepath"
@@ -40,7 +41,7 @@ type Options struct {
 	DeepLevel  int
 	Pattern    string
 	IPattern   string
-	OutFile    *os.File
+	OutFile    io.Writer
 	// File
 	ByteSize bool
 	UnitSize bool
