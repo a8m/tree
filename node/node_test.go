@@ -51,6 +51,7 @@ func (f *MockFs) ReadDir(path string) ([]string, error) {
 	return names, nil
 }
 
+// Mock output file
 type Out struct {
 	str string
 }
