@@ -62,6 +62,7 @@ func (o *Out) Write(p []byte) (int, error) {
 }
 
 // Tests
+// TODO: create filesystem creator + add assertion methods
 func TestSimple(t *testing.T) {
 	root := &file{
 		"root",
