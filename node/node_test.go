@@ -1,7 +1,6 @@
 package node
 
 import (
-	"fmt"
 	"os"
 	"syscall"
 	"testing"
@@ -35,17 +34,22 @@ func NewFs() *MockFs {
 	return &MockFs{make(map[string]*file)}
 }
 
-func (f *MockFs) addFile(path string, file *file) *MockFs {
-	f.files[path] = file
-	return f
+func (fs *MockFs) addFile(path string, file *file) *MockFs {
+	fs.files[path] = file
+	if file.IsDir() {
+		for _, f := range file.files {
+			fs.addFile(path+"/"+f.name, f)
+		}
+	}
+	return fs
 }
 
-func (f *MockFs) Stat(path string) (os.FileInfo, error) {
-	return f.files[path], nil
+func (fs *MockFs) Stat(path string) (os.FileInfo, error) {
+	return fs.files[path], nil
 }
-func (f *MockFs) ReadDir(path string) ([]string, error) {
+func (fs *MockFs) ReadDir(path string) ([]string, error) {
 	var names []string
-	for _, file := range f.files[path].files {
+	for _, file := range fs.files[path].files {
 		names = append(names, file.Name())
 	}
 	return names, nil
@@ -56,27 +60,38 @@ type Out struct {
 	str string
 }
 
+func (o *Out) equal(s string) bool {
+	return o.str == s
+}
+
 func (o *Out) Write(p []byte) (int, error) {
 	o.str += string(p)
 	return len(p), nil
 }
 
+// Mock files
+var root = &file{
+	"root",
+	200,
+	[]*file{
+		&file{"a", 50, nil, time.Now()},
+		&file{"b", 50, nil, time.Now()},
+		&file{
+			"c",
+			100,
+			[]*file{
+				&file{"d", 50, nil, time.Now()},
+				&file{"e", 50, nil, time.Now()},
+			},
+			time.Now()},
+	},
+	time.Now(),
+}
+
 // Tests
 // TODO: create filesystem creator + add assertion methods
 func TestSimple(t *testing.T) {
-	root := &file{
-		"root",
-		0,
-		[]*file{
-			&file{"a", 0, nil, time.Now()},
-			&file{"b", 0, nil, time.Now()},
-		},
-		time.Now(),
-	}
-	fs := NewFs().addFile("root", root)
-	for _, f := range root.files {
-		fs.addFile("root/"+f.name, f)
-	}
+	fs := NewFs().addFile(root.name, root)
 	out := new(Out)
 	opts := &Options{
 		Fs:      fs,
@@ -85,5 +100,14 @@ func TestSimple(t *testing.T) {
 	inf := New("root")
 	inf.Visit(opts)
 	inf.Print("", opts)
-	fmt.Println(out.str)
+	expected := `root
+├── a
+├── b
+└── c
+    ├── d
+    └── e
+`
+	if !out.equal(expected) {
+		t.Errorf("%s:\ngot:\n%+v\nexpected:\n%+v", "Simple Test", out.str, expected)
+	}
 }
