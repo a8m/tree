@@ -89,7 +89,6 @@ var root = &file{
 }
 
 // Tests
-// TODO: create filesystem creator + add assertion methods
 func TestSimple(t *testing.T) {
 	fs := NewFs().addFile(root.name, root)
 	out := new(Out)
