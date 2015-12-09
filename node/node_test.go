@@ -69,44 +69,57 @@ func (o *Out) Write(p []byte) (int, error) {
 	return len(p), nil
 }
 
-// Mock files
-var root = &file{
-	"root",
-	200,
-	[]*file{
-		&file{"a", 50, nil, time.Now()},
-		&file{"b", 50, nil, time.Now()},
-		&file{
-			"c",
-			100,
-			[]*file{
-				&file{"d", 50, nil, time.Now()},
-				&file{"e", 50, nil, time.Now()},
-			},
-			time.Now()},
-	},
-	time.Now(),
+func (o *Out) clear() {
+	o.str = ""
 }
 
-// Tests
-func TestSimple(t *testing.T) {
-	fs := NewFs().addFile(root.name, root)
-	out := new(Out)
-	opts := &Options{
-		Fs:      fs,
-		OutFile: out,
+// Mock files and file-system
+var (
+	root = &file{
+		"root",
+		200,
+		[]*file{
+			&file{"a", 50, nil, time.Now()},
+			&file{"b", 50, nil, time.Now()},
+			&file{
+				"c",
+				100,
+				[]*file{
+					&file{"d", 50, nil, time.Now()},
+					&file{"e", 50, nil, time.Now()},
+				},
+				time.Now()},
+		},
+		time.Now(),
 	}
-	inf := New("root")
-	inf.Visit(opts)
-	inf.Print("", opts)
-	expected := `root
+	fs  = NewFs().addFile(root.name, root)
+	out = new(Out)
+)
+
+type treeTest struct {
+	name     string
+	opts     *Options
+	expected string
+}
+
+var tests = []treeTest{
+	{"basic", &Options{Fs: fs, OutFile: out}, `root
 ├── a
 ├── b
 └── c
     ├── d
     └── e
-`
-	if !out.equal(expected) {
-		t.Errorf("%s:\ngot:\n%+v\nexpected:\n%+v", "Simple Test", out.str, expected)
+`}}
+
+// Tests
+func TestSimple(t *testing.T) {
+	for _, test := range tests {
+		inf := New(root.name)
+		inf.Visit(test.opts)
+		inf.Print("", test.opts)
+		if !out.equal(test.expected) {
+			t.Errorf("%s:\ngot:\n%+v\nexpected:\n%+v", test.name, out.str, test.expected)
+		}
+		out.clear()
 	}
 }
