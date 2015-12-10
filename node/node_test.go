@@ -87,6 +87,7 @@ var (
 				[]*file{
 					&file{"d", 50, nil, time.Now()},
 					&file{"e", 50, nil, time.Now()},
+					&file{".f", 0, nil, time.Now()},
 				},
 				time.Now()},
 		},
@@ -109,6 +110,17 @@ var tests = []treeTest{
 └── c
     ├── d
     └── e
+`},
+	{"all", &Options{Fs: fs, OutFile: out, All: true}, `root
+├── a
+├── b
+└── c
+    ├── d
+    ├── e
+    └── .f
+`},
+	{"dirs", &Options{Fs: fs, OutFile: out, DirsOnly: true}, `root
+└── c
 `}}
 
 // Tests
