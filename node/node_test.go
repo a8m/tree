@@ -121,6 +121,12 @@ var tests = []treeTest{
 `},
 	{"dirs", &Options{Fs: fs, OutFile: out, DirsOnly: true}, `root
 └── c
+`}, {"fullPath", &Options{Fs: fs, OutFile: out, FullPath: true}, `root
+├── root/a
+├── root/b
+└── root/c
+    ├── root/c/d
+    └── root/c/e
 `}}
 
 // Tests
