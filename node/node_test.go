@@ -127,6 +127,10 @@ var tests = []treeTest{
 └── root/c
     ├── root/c/d
     └── root/c/e
+`}, {"deepLevel", &Options{Fs: fs, OutFile: out, DeepLevel: 1}, `root
+├── a
+├── b
+└── c
 `}}
 
 // Tests
