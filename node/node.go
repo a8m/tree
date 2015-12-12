@@ -233,13 +233,11 @@ func (node *Node) Print(indent string, opts *Options) {
 	}
 	// IsSymlink
 	if node.Mode()&os.ModeSymlink == os.ModeSymlink {
-		target, _ := filepath.EvalSymlinks(node.Name())
+		target, _ := os.Readlink(node.Name())
 		if opts.Colorize {
 			fi, err := opts.Fs.Stat(target)
 			if err == nil {
 				target = ANSIColor(fi, target)
-			} else {
-				fmt.Println("error")
 			}
 		}
 		name = fmt.Sprintf("%s -> %s", name, target)

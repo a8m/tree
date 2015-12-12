@@ -21,10 +21,6 @@ const (
 	White
 )
 
-func ansiFormat(color int, s string) string {
-	return fmt.Sprintf("%s[%d;%dm%s%s[%dm", Escape, Bold, color, s, Escape, Reset)
-}
-
 // ANSIColor
 func ANSIColor(node os.FileInfo, s string) string {
 	var color int
@@ -39,14 +35,21 @@ func ANSIColor(node os.FileInfo, s string) string {
 		".xbm", ".xpm":
 		color = Magenta
 	default:
+		// IsDir
 		if node.IsDir() {
 			color = Blue
 		}
+		// IsSymlink
 		if node.Mode()&os.ModeSymlink == os.ModeSymlink {
-			color = Cyan
+			if _, err := filepath.EvalSymlinks(node.Name()); err != nil {
+				// Error link color
+				return fmt.Sprintf("%s[40;%d;%dm%s%s[%dm", Escape, Bold, Red, s, Escape, Reset)
+			} else {
+				color = Cyan
+			}
 		}
 	}
-	return ansiFormat(color, s)
+	return fmt.Sprintf("%s[%d;%dm%s%s[%dm", Escape, Bold, color, s, Escape, Reset)
 }
 
 // TODO: HTMLColor
