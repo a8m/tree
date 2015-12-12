@@ -39,12 +39,13 @@ var (
 	sort      = flag.String("sort", "", "")
 	// Graphics
 	i = flag.Bool("i", false, "")
+	C = flag.Bool("C", false, "")
 )
 
 type fs struct{}
 
 func (f *fs) Stat(path string) (os.FileInfo, error) {
-	return os.Stat(path)
+	return os.Lstat(path)
 }
 func (f *fs) ReadDir(path string) ([]string, error) {
 	dir, err := os.Open(path)
@@ -119,6 +120,7 @@ func main() {
 		SizeSort:  *sort == "size",
 		// Graphics
 		NoIndent: *i,
+		Colorize: *C,
 	}
 	for _, dir := range dirs {
 		inf := node.New(dir)

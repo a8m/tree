@@ -2,6 +2,7 @@ package node
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -25,7 +26,7 @@ func ansiFormat(color int, s string) string {
 }
 
 // ANSIColor
-func ANSIColor(node *Node, s string) string {
+func ANSIColor(node os.FileInfo, s string) string {
 	var color int
 	switch ext := filepath.Ext(node.Name()); strings.ToLower(ext) {
 	case ".bat", ".btm", ".cmd", ".com", ".dll", ".exe":
@@ -37,6 +38,13 @@ func ANSIColor(node *Node, s string) string {
 		".mp3", ".mpeg", ".mpg", ".ogg", ".ppm", ".rm", ".tga", ".tif", ".wav", ".wmv",
 		".xbm", ".xpm":
 		color = Magenta
+	default:
+		if node.IsDir() {
+			color = Blue
+		}
+		if node.Mode()&os.ModeSymlink == os.ModeSymlink {
+			color = Cyan
+		}
 	}
 	return ansiFormat(color, s)
 }

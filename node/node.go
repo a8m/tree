@@ -63,6 +63,7 @@ type Options struct {
 	ReverSort bool
 	// Graphics
 	NoIndent bool
+	Colorize bool
 }
 
 // New get path and create new node
@@ -225,6 +226,23 @@ func (node *Node) Print(indent string, opts *Options) {
 	// Quotes
 	if opts.Quotes {
 		name = fmt.Sprintf("\"%s\"", name)
+	}
+	// Colorize
+	if opts.Colorize {
+		name = ANSIColor(node, name)
+	}
+	// IsSymlink
+	if node.Mode()&os.ModeSymlink == os.ModeSymlink {
+		target, _ := filepath.EvalSymlinks(node.Name())
+		if opts.Colorize {
+			fi, err := opts.Fs.Stat(target)
+			if err == nil {
+				target = ANSIColor(fi, target)
+			} else {
+				fmt.Println("error")
+			}
+		}
+		name = fmt.Sprintf("%s -> %s", name, target)
 	}
 	// Print file details
 	fmt.Fprintln(opts.OutFile, name)
