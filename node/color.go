@@ -48,6 +48,15 @@ func ANSIColor(node os.FileInfo, s string) string {
 				color = Cyan
 			}
 		}
+		// IsSocket
+		if node.Mode()&os.ModeSocket == os.ModeSocket {
+			return fmt.Sprintf("%s[40;%d;%dm%s%s[%dm", Escape, Bold, Magenta, s, Escape, Reset)
+		}
+		// IsFifo
+		// IsBlk
+		// IsChr
+		// IsOrphan(יתום)
+		// IsExec
 	}
 	return fmt.Sprintf("%s[%d;%dm%s%s[%dm", Escape, Bold, color, s, Escape, Reset)
 }
