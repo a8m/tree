@@ -131,6 +131,10 @@ var tests = []treeTest{
 ├── a
 ├── b
 └── c
+`}, {"pattern", &Options{Fs: fs, OutFile: out, Pattern: "(a|e)"}, `root
+├── a
+└── c
+    └── e
 `}}
 
 // Tests
