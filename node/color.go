@@ -14,7 +14,7 @@ const (
 	Black int = iota + 28
 	Red
 	Green
-	Yello
+	Yellow
 	Blue
 	Magenta
 	Cyan
@@ -53,6 +53,9 @@ func ANSIColor(node os.FileInfo, s string) string {
 			return fmt.Sprintf("%s[40;%d;%dm%s%s[%dm", Escape, Bold, Magenta, s, Escape, Reset)
 		}
 		// IsFifo
+		if node.Mode()&os.ModeNamedPipe == os.ModeNamedPipe {
+			return fmt.Sprintf("%s[40;%dm%s%s[%dm", Escape, Yellow, s, Escape, Reset)
+		}
 		// IsBlk
 		// IsChr
 		// IsOrphan(יתום)
