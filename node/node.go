@@ -102,7 +102,7 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 			depth: node.depth + 1,
 		}
 		d, f := nnode.Visit(opts)
-		if !nnode.IsDir() {
+		if nnode.err == nil && !nnode.IsDir() {
 			// "dirs only" option
 			if opts.DirsOnly {
 				continue

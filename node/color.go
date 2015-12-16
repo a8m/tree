@@ -56,7 +56,10 @@ func ANSIColor(node os.FileInfo, s string) string {
 		if node.Mode()&os.ModeNamedPipe == os.ModeNamedPipe {
 			return fmt.Sprintf("%s[40;%dm%s%s[%dm", Escape, Yellow, s, Escape, Reset)
 		}
-		// IsBlk
+		// IsBlk - a block special file (a device like a disk)
+		if node.Mode()&os.ModeDevice == os.ModeDevice {
+			return fmt.Sprintf("%s[40;%d;01m%s%s[%dm", Escape, Yellow, s, Escape, Reset)
+		}
 		// IsChr
 		// IsOrphan(יתום)
 		// IsExec
