@@ -22,7 +22,7 @@ const (
 )
 
 // ANSIColor
-func ANSIColor(node os.FileInfo, s string) string {
+func ANSIColor(node *Node, s string) string {
 	var color int
 	switch ext := filepath.Ext(node.Name()); strings.ToLower(ext) {
 	case ".bat", ".btm", ".cmd", ".com", ".dll", ".exe":
@@ -41,7 +41,7 @@ func ANSIColor(node os.FileInfo, s string) string {
 		}
 		// IsSymlink
 		if node.Mode()&os.ModeSymlink == os.ModeSymlink {
-			if _, err := filepath.EvalSymlinks(node.Name()); err != nil {
+			if _, err := filepath.EvalSymlinks(node.path); err != nil {
 				// Error link color
 				return fmt.Sprintf("%s[40;%d;%dm%s%s[%dm", Escape, Bold, Red, s, Escape, Reset)
 			} else {
