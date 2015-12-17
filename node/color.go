@@ -61,7 +61,7 @@ func ANSIColor(node *Node, s string) string {
 			return fmt.Sprintf("%s[40;%d;01m%s%s[%dm", Escape, Yellow, s, Escape, Reset)
 		}
 		// IsChr
-		// IsOrphan(יתום)
+		// IsOrphan
 		// IsExec
 	}
 	return fmt.Sprintf("%s[%d;%dm%s%s[%dm", Escape, Bold, color, s, Escape, Reset)
