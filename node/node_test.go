@@ -142,6 +142,12 @@ var tests = []treeTest{
 `}, {"ignore-case", &Options{Fs: fs, OutFile: out, Pattern: "(A)", IgnoreCase: true}, `root
 ├── a
 └── c
+`}, {"no-indent", &Options{Fs: fs, OutFile: out, NoIndent: true}, `root
+a
+b
+c
+d
+e
 `}}
 
 // Tests
