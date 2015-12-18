@@ -139,6 +139,9 @@ var tests = []treeTest{
 ├── b
 └── c
     └── d
+`}, {"ignore-case", &Options{Fs: fs, OutFile: out, Pattern: "(A)", IgnoreCase: true}, `root
+├── a
+└── c
 `}}
 
 // Tests
