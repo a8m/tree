@@ -41,6 +41,7 @@ func ANSIColor(node *Node, s string) string {
 		}
 		// IsSymlink
 		if node.Mode()&os.ModeSymlink == os.ModeSymlink {
+			// IsOrphan
 			if _, err := filepath.EvalSymlinks(node.path); err != nil {
 				// Error link color
 				return fmt.Sprintf("%s[40;%d;%dm%s%s[%dm", Escape, Bold, Red, s, Escape, Reset)
@@ -61,8 +62,11 @@ func ANSIColor(node *Node, s string) string {
 			return fmt.Sprintf("%s[40;%d;01m%s%s[%dm", Escape, Yellow, s, Escape, Reset)
 		}
 		// IsChr
-		// IsOrphan
-		// IsExec
+		if node.Mode()&os.ModeCharDevice == os.ModeCharDevice {
+			return fmt.Sprintf("%s[40;%d;01m%s%s[%dm", Escape, Yellow, s, Escape, Reset)
+		}
+		// IsExecutable
+		// https://groups.google.com/forum/#!msg/golang-nuts/_6YqjJdfYyA/mOnV5zSpP8oJ
 	}
 	return fmt.Sprintf("%s[%d;%dm%s%s[%dm", Escape, Bold, color, s, Escape, Reset)
 }

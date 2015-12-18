@@ -234,6 +234,7 @@ func (node *Node) Print(indent string, opts *Options) {
 	// IsSymlink
 	if node.Mode()&os.ModeSymlink == os.ModeSymlink {
 		target, err := filepath.EvalSymlinks(node.path)
+		// TODO: use - os.IsNotExist(err)
 		if err != nil {
 			target, _ = os.Readlink(node.path)
 		}
