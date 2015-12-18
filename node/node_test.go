@@ -104,6 +104,7 @@ type treeTest struct {
 }
 
 var tests = []treeTest{
+	// List options
 	{"basic", &Options{Fs: fs, OutFile: out}, `root
 ├── a
 ├── b
@@ -142,13 +143,37 @@ var tests = []treeTest{
 `}, {"ignore-case", &Options{Fs: fs, OutFile: out, Pattern: "(A)", IgnoreCase: true}, `root
 ├── a
 └── c
-`}, {"no-indent", &Options{Fs: fs, OutFile: out, NoIndent: true}, `root
+`},
+	// Graphics options
+	{"no-indent", &Options{Fs: fs, OutFile: out, NoIndent: true}, `root
 a
 b
 c
 d
 e
+`},
+	// Sorting options
+	{"dirs-first sort", &Options{Fs: fs, OutFile: out, DirSort: true}, `root
+├── c
+│   ├── d
+│   └── e
+├── a
+└── b
+`}, {"reverse sort", &Options{Fs: fs, OutFile: out, ReverSort: true, DirSort: true}, `root
+├── a
+├── b
+└── c
+    ├── d
+    └── e
+`}, {"no-sort", &Options{Fs: fs, OutFile: out, NoSort: true, DirSort: true}, `root
+├── a
+├── b
+└── c
+    ├── d
+    └── e
 `}}
+
+//  c - CTimeSort
 
 // Tests
 func TestSimple(t *testing.T) {
