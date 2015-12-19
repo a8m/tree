@@ -191,6 +191,11 @@ var sortTests = []treeTest{
 ├── c
 │   └── d
 └── a
+`}, {"size-sort", &Options{Fs: fs, OutFile: out, SizeSort: true}, `root
+├── a
+├── c
+│   └── d
+└── b
 `}}
 
 func TestSort(t *testing.T) {
@@ -198,11 +203,11 @@ func TestSort(t *testing.T) {
 		"root",
 		200,
 		[]*file{
-			&file{"b", 50, nil, time.Now()},
-			&file{"c", 50, []*file{
-				&file{"d", 50, nil, time.Now()},
+			&file{"b", 11, nil, time.Now()},
+			&file{"c", 10, []*file{
+				&file{"d", 10, nil, time.Now()},
 			}, time.Now()},
-			&file{"a", 50, nil, time.Now()},
+			&file{"a", 9, nil, time.Now()},
 		},
 		time.Now(),
 	}
