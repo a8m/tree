@@ -20,10 +20,7 @@ func (f *file) Size() int64           { return f.size }
 func (f *file) Mode() (o os.FileMode) { return }
 func (f *file) ModTime() time.Time    { return f.lastMod }
 func (f *file) IsDir() bool           { return nil != f.files }
-func (f *file) Sys() interface{} {
-	var s *syscall.Stat_t
-	return s
-}
+func (f *file) Sys() interface{}      { return new(syscall.Stat_t) }
 
 // Mock filesystem
 type MockFs struct {
@@ -32,6 +29,11 @@ type MockFs struct {
 
 func NewFs() *MockFs {
 	return &MockFs{make(map[string]*file)}
+}
+
+func (fs *MockFs) clean() *MockFs {
+	fs.files = make(map[string]*file)
+	return fs
 }
 
 func (fs *MockFs) addFile(path string, file *file) *MockFs {
@@ -73,27 +75,9 @@ func (o *Out) clear() {
 	o.str = ""
 }
 
-// Mock files and file-system
+// FileSystem and Stdout mocks
 var (
-	root = &file{
-		"root",
-		200,
-		[]*file{
-			&file{"a", 50, nil, time.Now()},
-			&file{"b", 50, nil, time.Now()},
-			&file{
-				"c",
-				100,
-				[]*file{
-					&file{"d", 50, nil, time.Now()},
-					&file{"e", 50, nil, time.Now()},
-					&file{".f", 0, nil, time.Now()},
-				},
-				time.Now()},
-		},
-		time.Now(),
-	}
-	fs  = NewFs().addFile(root.name, root)
+	fs  = NewFs()
 	out = new(Out)
 )
 
@@ -103,8 +87,7 @@ type treeTest struct {
 	expected string
 }
 
-var tests = []treeTest{
-	// List options
+var listTests = []treeTest{
 	{"basic", &Options{Fs: fs, OutFile: out}, `root
 ├── a
 ├── b
@@ -151,33 +134,80 @@ b
 c
 d
 e
-`},
-	// Sorting options
-	{"dirs-first sort", &Options{Fs: fs, OutFile: out, DirSort: true}, `root
-├── c
-│   ├── d
-│   └── e
-├── a
-└── b
-`}, {"reverse sort", &Options{Fs: fs, OutFile: out, ReverSort: true, DirSort: true}, `root
-├── a
-├── b
-└── c
-    ├── d
-    └── e
-`}, {"no-sort", &Options{Fs: fs, OutFile: out, NoSort: true, DirSort: true}, `root
-├── a
-├── b
-└── c
-    ├── d
-    └── e
 `}}
 
 //  c - CTimeSort
 
 // Tests
 func TestSimple(t *testing.T) {
-	for _, test := range tests {
+	root := &file{
+		"root",
+		200,
+		[]*file{
+			&file{"a", 50, nil, time.Now()},
+			&file{"b", 50, nil, time.Now()},
+			&file{
+				"c",
+				100,
+				[]*file{
+					&file{"d", 50, nil, time.Now()},
+					&file{"e", 50, nil, time.Now()},
+					&file{".f", 0, nil, time.Now()},
+				},
+				time.Now()},
+		},
+		time.Now(),
+	}
+	fs.clean().addFile(root.name, root)
+	for _, test := range listTests {
+		inf := New(root.name)
+		inf.Visit(test.opts)
+		inf.Print("", test.opts)
+		if !out.equal(test.expected) {
+			t.Errorf("%s:\ngot:\n%+v\nexpected:\n%+v", test.name, out.str, test.expected)
+		}
+		out.clear()
+	}
+}
+
+var sortTests = []treeTest{
+	{"name-sort", &Options{Fs: fs, OutFile: out, NameSort: true}, `root
+├── a
+├── b
+└── c
+    └── d
+`}, {"dirs-first sort", &Options{Fs: fs, OutFile: out, DirSort: true}, `root
+├── c
+│   └── d
+├── b
+└── a
+`}, {"reverse sort", &Options{Fs: fs, OutFile: out, ReverSort: true, DirSort: true}, `root
+├── b
+├── a
+└── c
+    └── d
+`}, {"no-sort", &Options{Fs: fs, OutFile: out, NoSort: true, DirSort: true}, `root
+├── b
+├── c
+│   └── d
+└── a
+`}}
+
+func TestSort(t *testing.T) {
+	root := &file{
+		"root",
+		200,
+		[]*file{
+			&file{"b", 50, nil, time.Now()},
+			&file{"c", 50, []*file{
+				&file{"d", 50, nil, time.Now()},
+			}, time.Now()},
+			&file{"a", 50, nil, time.Now()},
+		},
+		time.Now(),
+	}
+	fs.clean().addFile(root.name, root)
+	for _, test := range sortTests {
 		inf := New(root.name)
 		inf.Visit(test.opts)
 		inf.Print("", test.opts)
