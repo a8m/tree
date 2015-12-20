@@ -65,8 +65,12 @@ func ANSIColor(node *Node, s string) string {
 		if node.Mode()&os.ModeCharDevice == os.ModeCharDevice {
 			return fmt.Sprintf("%s[40;%d;01m%s%s[%dm", Escape, Yellow, s, Escape, Reset)
 		}
-		// IsExecutable
-		// https://groups.google.com/forum/#!msg/golang-nuts/_6YqjJdfYyA/mOnV5zSpP8oJ
+		// IsExec
+		// Refactor after write some tests
+		// http://stackoverflow.com/questions/13098620/using-stat-to-check-if-a-file-is-executable-in-c
+		//if node.Mode()&(syscall.S_IXUSR|syscall.S_IXGRP|syscall.S_IXOTH) != 0 {
+		//	return fmt.Sprintf("%s[01;%dm%s%s[%dm", Escape, Green, s, Escape, Reset)
+		//}
 	}
 	return fmt.Sprintf("%s[%d;%dm%s%s[%dm", Escape, Bold, color, s, Escape, Reset)
 }
