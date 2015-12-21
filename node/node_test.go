@@ -222,3 +222,37 @@ func TestSort(t *testing.T) {
 		out.clear()
 	}
 }
+
+var graphicTests = []treeTest{
+	{"byte-size", &Options{Fs: fs, OutFile: out, ByteSize: true}, `root
+├── [       1500]  a
+├── [       9999]  b
+└── [       1000]  c
+`}, {"unit-size", &Options{Fs: fs, OutFile: out, UnitSize: true}, `root
+├── [1.5K]  a
+├── [9.8K]  b
+└── [1000]  c
+`}}
+
+func TestGraphics(t *testing.T) {
+	root := &file{
+		"root",
+		11499,
+		[]*file{
+			&file{"a", 1500, nil, time.Now()},
+			&file{"b", 9999, nil, time.Now()},
+			&file{"c", 1000, nil, time.Now()},
+		},
+		time.Now(),
+	}
+	fs.clean().addFile(root.name, root)
+	for _, test := range graphicTests {
+		inf := New(root.name)
+		inf.Visit(test.opts)
+		inf.Print("", test.opts)
+		if !out.equal(test.expected) {
+			t.Errorf("%s:\ngot:\n%+v\nexpected:\n%+v", test.name, out.str, test.expected)
+		}
+		out.clear()
+	}
+}
