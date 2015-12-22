@@ -13,6 +13,7 @@ type file struct {
 	size    int64
 	files   []*file
 	lastMod time.Time
+	stat_t  interface{}
 }
 
 func (f *file) Name() string          { return f.name }
@@ -20,7 +21,12 @@ func (f *file) Size() int64           { return f.size }
 func (f *file) Mode() (o os.FileMode) { return }
 func (f *file) ModTime() time.Time    { return f.lastMod }
 func (f *file) IsDir() bool           { return nil != f.files }
-func (f *file) Sys() interface{}      { return new(syscall.Stat_t) }
+func (f *file) Sys() interface{} {
+	if f.stat_t == nil {
+		return new(syscall.Stat_t)
+	}
+	return f.stat_t
+}
 
 // Mock filesystem
 type MockFs struct {
@@ -144,19 +150,21 @@ func TestSimple(t *testing.T) {
 		"root",
 		200,
 		[]*file{
-			&file{"a", 50, nil, time.Now()},
-			&file{"b", 50, nil, time.Now()},
+			&file{"a", 50, nil, time.Now(), nil},
+			&file{"b", 50, nil, time.Now(), nil},
 			&file{
 				"c",
 				100,
 				[]*file{
-					&file{"d", 50, nil, time.Now()},
-					&file{"e", 50, nil, time.Now()},
-					&file{".f", 0, nil, time.Now()},
+					&file{"d", 50, nil, time.Now(), nil},
+					&file{"e", 50, nil, time.Now(), nil},
+					&file{".f", 0, nil, time.Now(), nil},
 				},
-				time.Now()},
+				time.Now(),
+				nil},
 		},
 		time.Now(),
+		nil,
 	}
 	fs.clean().addFile(root.name, root)
 	for _, test := range listTests {
@@ -203,13 +211,14 @@ func TestSort(t *testing.T) {
 		"root",
 		200,
 		[]*file{
-			&file{"b", 11, nil, time.Now()},
+			&file{"b", 11, nil, time.Now(), nil},
 			&file{"c", 10, []*file{
-				&file{"d", 10, nil, time.Now()},
-			}, time.Now()},
-			&file{"a", 9, nil, time.Now()},
+				&file{"d", 10, nil, time.Now(), nil},
+			}, time.Now(), nil},
+			&file{"a", 9, nil, time.Now(), nil},
 		},
 		time.Now(),
+		nil,
 	}
 	fs.clean().addFile(root.name, root)
 	for _, test := range sortTests {
@@ -232,6 +241,10 @@ var graphicTests = []treeTest{
 ├── [1.5K]  a
 ├── [9.8K]  b
 └── [1000]  c
+`}, {"show-gid", &Options{Fs: fs, OutFile: out, ShowGid: true}, `root
+├── [1   ]  a
+├── [2   ]  b
+└── [1   ]  c
 `}}
 
 func TestGraphics(t *testing.T) {
@@ -239,11 +252,12 @@ func TestGraphics(t *testing.T) {
 		"root",
 		11499,
 		[]*file{
-			&file{"a", 1500, nil, time.Now()},
-			&file{"b", 9999, nil, time.Now()},
-			&file{"c", 1000, nil, time.Now()},
+			&file{"a", 1500, nil, time.Now(), &syscall.Stat_t{Gid: 1}},
+			&file{"b", 9999, nil, time.Now(), &syscall.Stat_t{Gid: 2}},
+			&file{"c", 1000, nil, time.Now(), &syscall.Stat_t{Gid: 1}},
 		},
 		time.Now(),
+		&syscall.Stat_t{Gid: 1},
 	}
 	fs.clean().addFile(root.name, root)
 	for _, test := range graphicTests {
