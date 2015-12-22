@@ -233,7 +233,11 @@ func TestSort(t *testing.T) {
 }
 
 var graphicTests = []treeTest{
-	{"byte-size", &Options{Fs: fs, OutFile: out, ByteSize: true}, `root
+	{"quotes", &Options{Fs: fs, OutFile: out, Quotes: true}, `"root"
+├── "a"
+├── "b"
+└── "c"
+`}, {"byte-size", &Options{Fs: fs, OutFile: out, ByteSize: true}, `root
 ├── [       1500]  a
 ├── [       9999]  b
 └── [       1000]  c
