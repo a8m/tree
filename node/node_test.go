@@ -16,11 +16,17 @@ type file struct {
 	stat_t  interface{}
 }
 
-func (f *file) Name() string          { return f.name }
-func (f *file) Size() int64           { return f.size }
-func (f *file) Mode() (o os.FileMode) { return }
-func (f *file) ModTime() time.Time    { return f.lastMod }
-func (f *file) IsDir() bool           { return nil != f.files }
+func (f *file) Name() string { return f.name }
+func (f *file) Size() int64  { return f.size }
+func (f *file) Mode() (o os.FileMode) {
+	if f.stat_t != nil {
+		stat := (f.stat_t).(*syscall.Stat_t)
+		o = os.FileMode(stat.Mode)
+	}
+	return
+}
+func (f *file) ModTime() time.Time { return f.lastMod }
+func (f *file) IsDir() bool        { return nil != f.files }
 func (f *file) Sys() interface{} {
 	if f.stat_t == nil {
 		return new(syscall.Stat_t)
@@ -249,16 +255,28 @@ var graphicTests = []treeTest{
 ├── [1   ]  a
 ├── [2   ]  b
 └── [1   ]  c
+`}, {"mode", &Options{Fs: fs, OutFile: out, FileMode: true}, `root
+├── [-rw-r--r--]  a
+├── [-rwxr-xr-x]  b
+└── [-rw-rw-rw-]  c
+`}, {"lastMod", &Options{Fs: fs, OutFile: out, LastMod: true}, `root
+├── [Feb 11 00:00]  a
+├── [Jan 28 00:00]  b
+└── [Jul 12 00:00]  c
 `}}
 
 func TestGraphics(t *testing.T) {
+	tFmt := "2006-Jan-02"
+	aTime, _ := time.Parse(tFmt, "2015-Feb-11")
+	bTime, _ := time.Parse(tFmt, "2006-Jan-28")
+	cTime, _ := time.Parse(tFmt, "2015-Jul-12")
 	root := &file{
 		"root",
 		11499,
 		[]*file{
-			&file{"a", 1500, nil, time.Now(), &syscall.Stat_t{Gid: 1}},
-			&file{"b", 9999, nil, time.Now(), &syscall.Stat_t{Gid: 2}},
-			&file{"c", 1000, nil, time.Now(), &syscall.Stat_t{Gid: 1}},
+			&file{"a", 1500, nil, aTime, &syscall.Stat_t{Gid: 1, Mode: 0644}},
+			&file{"b", 9999, nil, bTime, &syscall.Stat_t{Gid: 2, Mode: 0755}},
+			&file{"c", 1000, nil, cTime, &syscall.Stat_t{Gid: 1, Mode: 0666}},
 		},
 		time.Now(),
 		&syscall.Stat_t{Gid: 1},
