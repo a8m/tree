@@ -148,8 +148,6 @@ d
 e
 `}}
 
-//  c - CTimeSort
-
 // Tests
 func TestSimple(t *testing.T) {
 	root := &file{
@@ -210,18 +208,28 @@ var sortTests = []treeTest{
 ├── c
 │   └── d
 └── b
+`}, {"last-mod-sort", &Options{Fs: fs, OutFile: out, ModSort: true}, `root
+├── a
+├── b
+└── c
+    └── d
 `}}
 
 func TestSort(t *testing.T) {
+
+	tFmt := "2006-Jan-02"
+	aTime, _ := time.Parse(tFmt, "2015-Aug-01")
+	bTime, _ := time.Parse(tFmt, "2015-Sep-01")
+	cTime, _ := time.Parse(tFmt, "2015-Oct-01")
 	root := &file{
 		"root",
 		200,
 		[]*file{
-			&file{"b", 11, nil, time.Now(), nil},
+			&file{"b", 11, nil, bTime, nil},
 			&file{"c", 10, []*file{
-				&file{"d", 10, nil, time.Now(), nil},
-			}, time.Now(), nil},
-			&file{"a", 9, nil, time.Now(), nil},
+				&file{"d", 10, nil, cTime, nil},
+			}, cTime, nil},
+			&file{"a", 9, nil, aTime, nil},
 		},
 		time.Now(),
 		nil,
