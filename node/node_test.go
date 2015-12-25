@@ -106,16 +106,14 @@ var listTests = []treeTest{
 └── c
     ├── d
     └── e
-`},
-	{"all", &Options{Fs: fs, OutFile: out, All: true}, `root
+`}, {"all", &Options{Fs: fs, OutFile: out, All: true}, `root
 ├── a
 ├── b
 └── c
     ├── d
     ├── e
     └── .f
-`},
-	{"dirs", &Options{Fs: fs, OutFile: out, DirsOnly: true}, `root
+`}, {"dirs", &Options{Fs: fs, OutFile: out, DirsOnly: true}, `root
 └── c
 `}, {"fullPath", &Options{Fs: fs, OutFile: out, FullPath: true}, `root
 ├── root/a
@@ -138,14 +136,6 @@ var listTests = []treeTest{
 `}, {"ignore-case", &Options{Fs: fs, OutFile: out, Pattern: "(A)", IgnoreCase: true}, `root
 ├── a
 └── c
-`},
-	// Graphics options
-	{"no-indent", &Options{Fs: fs, OutFile: out, NoIndent: true}, `root
-a
-b
-c
-d
-e
 `}}
 
 // Tests
@@ -213,6 +203,11 @@ var sortTests = []treeTest{
 ├── b
 └── c
     └── d
+`}, {"c-time-sort", &Options{Fs: fs, OutFile: out, CTimeSort: true}, `root
+├── b
+├── c
+│   └── d
+└── a
 `}}
 
 func TestSort(t *testing.T) {
@@ -247,7 +242,11 @@ func TestSort(t *testing.T) {
 }
 
 var graphicTests = []treeTest{
-	{"quotes", &Options{Fs: fs, OutFile: out, Quotes: true}, `"root"
+	{"no-indent", &Options{Fs: fs, OutFile: out, NoIndent: true}, `root
+a
+b
+c
+`}, {"quotes", &Options{Fs: fs, OutFile: out, Quotes: true}, `"root"
 ├── "a"
 ├── "b"
 └── "c"
