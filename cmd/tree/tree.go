@@ -4,7 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"github.com/a8m/tree/node"
+	"github.com/a8m/tree"
 	"os"
 )
 
@@ -88,7 +88,7 @@ func main() {
 		}
 	}
 	// Set options
-	opts := &node.Options{
+	opts := &tree.Options{
 		Fs: new(fs),
 		// List
 		OutFile:    outFile,
@@ -123,7 +123,7 @@ func main() {
 		Colorize: *C,
 	}
 	for _, dir := range dirs {
-		inf := node.New(dir)
+		inf := tree.New(dir)
 		if d, f := inf.Visit(opts); f != 0 {
 			if d > 0 {
 				d -= 1
