@@ -16,18 +16,18 @@ type file struct {
 	stat_t  interface{}
 }
 
-func (f *file) Name() string { return f.name }
-func (f *file) Size() int64  { return f.size }
-func (f *file) Mode() (o os.FileMode) {
+func (f file) Name() string { return f.name }
+func (f file) Size() int64  { return f.size }
+func (f file) Mode() (o os.FileMode) {
 	if f.stat_t != nil {
 		stat := (f.stat_t).(*syscall.Stat_t)
 		o = os.FileMode(stat.Mode)
 	}
 	return
 }
-func (f *file) ModTime() time.Time { return f.lastMod }
-func (f *file) IsDir() bool        { return nil != f.files }
-func (f *file) Sys() interface{} {
+func (f file) ModTime() time.Time { return f.lastMod }
+func (f file) IsDir() bool        { return nil != f.files }
+func (f file) Sys() interface{} {
 	if f.stat_t == nil {
 		return new(syscall.Stat_t)
 	}
