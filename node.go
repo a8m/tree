@@ -32,7 +32,8 @@ type Fs interface {
 }
 
 type Options struct {
-	Fs Fs
+	Fs      Fs
+	OutFile io.Writer
 	// List
 	All        bool
 	DirsOnly   bool
@@ -41,7 +42,6 @@ type Options struct {
 	DeepLevel  int
 	Pattern    string
 	IPattern   string
-	OutFile    io.Writer
 	// File
 	ByteSize bool
 	UnitSize bool

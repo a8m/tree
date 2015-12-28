@@ -1,13 +1,23 @@
 package tree
 
 import (
-	"fmt"
 	"testing"
 )
 
-func TestANSIColor(t *testing.T) {
-	var f1 file
-	f1.name = "hello"
-	n1 := &Node{FileInfo: f1}
-	fmt.Printf(ANSIColor(n1, f1.name) + "\n")
+var extsTests = []struct {
+	name     string
+	expected string
+}{
+	{"foo.jpg", "\x1b[1;35mfoo.jpg\x1b[0m"},
+	{"bar.tar", "\x1b[1;31mbar.tar\x1b[0m"},
+}
+
+func TestExtension(t *testing.T) {
+	for _, test := range extsTests {
+		f := &file{name: test.name}
+		n := &Node{FileInfo: f}
+		if actual := ANSIColor(n, f.name); actual != test.expected {
+			t.Errorf("\ngot:\n%+v\nexpected:\n%+v", actual, test.expected)
+		}
+	}
 }
