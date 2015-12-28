@@ -10,6 +10,7 @@ var extsTests = []struct {
 }{
 	{"foo.jpg", "\x1b[1;35mfoo.jpg\x1b[0m"},
 	{"bar.tar", "\x1b[1;31mbar.tar\x1b[0m"},
+	{"baz.exe", "\x1b[1;32mbaz.exe\x1b[0m"},
 }
 
 func TestExtension(t *testing.T) {
