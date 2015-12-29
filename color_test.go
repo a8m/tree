@@ -22,3 +22,11 @@ func TestExtension(t *testing.T) {
 		}
 	}
 }
+
+var modeTests = []struct {
+	name     string
+	expected string
+	mode     uint
+}{
+	{"dir", "dir", 122},
+}
