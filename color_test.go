@@ -1,6 +1,7 @@
 package tree
 
 import (
+	"os"
 	"testing"
 )
 
@@ -26,7 +27,7 @@ func TestExtension(t *testing.T) {
 var modeTests = []struct {
 	name     string
 	expected string
-	mode     uint
+	mode     os.FileMode
 }{
-	{"dir", "dir", 122},
+	{"dir", "dir", os.ModeDir},
 }

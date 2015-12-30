@@ -24,21 +24,23 @@ const (
 // ANSIColor
 func ANSIColor(node *Node, s string) string {
 	var color int
-	switch ext := filepath.Ext(node.Name()); strings.ToLower(ext) {
-	case ".bat", ".btm", ".cmd", ".com", ".dll", ".exe":
+	var mode = node.Mode()
+	var ext = filepath.Ext(node.Name())
+	switch {
+	case contains([]string{".bat", ".btm", ".cmd", ".com", ".dll", ".exe"}, ext):
 		color = Green
-	case ".arj", ".bz2", ".deb", ".gz", ".lzh", ".rpm", ".tar", ".taz", ".tb2", ".tbz2",
-		".tbz", ".tgz", ".tz", ".tz2", ".z", ".zip", ".zoo":
+	case contains([]string{".arj", ".bz2", ".deb", ".gz", ".lzh", ".rpm",
+		".tar", ".taz", ".tb2", ".tbz2", ".tbz", ".tgz", ".tz", ".tz2", ".z",
+		".zip", ".zoo"}, ext):
 		color = Red
-	case ".asf", ".avi", ".bmp", ".flac", ".gif", ".jpg", "jpeg", ".m2a", ".m2v", ".mov",
-		".mp3", ".mpeg", ".mpg", ".ogg", ".ppm", ".rm", ".tga", ".tif", ".wav", ".wmv",
-		".xbm", ".xpm":
+	case contains([]string{".asf", ".avi", ".bmp", ".flac", ".gif", ".jpg",
+		"jpeg", ".m2a", ".m2v", ".mov", ".mp3", ".mpeg", ".mpg", ".ogg", ".ppm",
+		".rm", ".tga", ".tif", ".wav", ".wmv",
+		".xbm", ".xpm"}, ext):
 		color = Magenta
+	case node.IsDir() || mode&os.ModeDir == os.ModeDir:
+		color = Blue
 	default:
-		// IsDir
-		if node.IsDir() {
-			color = Blue
-		}
 		// IsSymlink
 		if node.Mode()&os.ModeSymlink == os.ModeSymlink {
 			// IsOrphan
@@ -73,6 +75,16 @@ func ANSIColor(node *Node, s string) string {
 		//}
 	}
 	return fmt.Sprintf("%s[%d;%dm%s%s[%dm", Escape, Bold, color, s, Escape, Reset)
+}
+
+// case-insensitive contains helper
+func contains(slice []string, str string) bool {
+	for _, val := range slice {
+		if val == strings.ToLower(str) {
+			return true
+		}
+	}
+	return false
 }
 
 // TODO: HTMLColor
