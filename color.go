@@ -44,7 +44,7 @@ func ANSIColor(node *Node, s string) string {
 		style = "40;33"
 	case mode&os.ModeSocket != 0:
 		style = "40;1;35"
-	case mode&os.ModeDevice != 0:
+	case mode&os.ModeDevice != 0 || mode&os.ModeCharDevice != 0:
 		style = "40;1;33"
 	default:
 		// IsSymlink
@@ -56,10 +56,6 @@ func ANSIColor(node *Node, s string) string {
 			} else {
 				style = "1;36"
 			}
-		}
-		// IsChr
-		if node.Mode()&os.ModeCharDevice == os.ModeCharDevice {
-			return fmt.Sprintf("%s[40;%d;01m%s%s[%dm", Escape, Yellow, s, Escape, Reset)
 		}
 		// IsExec
 		// Refactor after write some tests

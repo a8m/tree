@@ -33,6 +33,7 @@ var modeTests = []struct {
 	{"socket", "\x1b[40;1;35msocket\x1b[0m", os.ModeSocket},
 	{"fifo", "\x1b[40;33mfifo\x1b[0m", os.ModeNamedPipe},
 	{"block", "\x1b[40;1;33mblock\x1b[0m", os.ModeDevice},
+	{"char", "\x1b[40;1;33mchar\x1b[0m", os.ModeCharDevice},
 }
 
 func TestFileMode(t *testing.T) {
