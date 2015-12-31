@@ -40,6 +40,8 @@ func ANSIColor(node *Node, s string) string {
 		color = Magenta
 	case node.IsDir() || mode&os.ModeDir != 0:
 		color = Blue
+	case mode&os.ModeSocket != 0:
+		return fmt.Sprintf("%s[40;%d;%dm%s%s[%dm", Escape, Bold, Magenta, s, Escape, Reset)
 	default:
 		// IsSymlink
 		if node.Mode()&os.ModeSymlink == os.ModeSymlink {
@@ -50,10 +52,6 @@ func ANSIColor(node *Node, s string) string {
 			} else {
 				color = Cyan
 			}
-		}
-		// IsSocket
-		if node.Mode()&os.ModeSocket == os.ModeSocket {
-			return fmt.Sprintf("%s[40;%d;%dm%s%s[%dm", Escape, Bold, Magenta, s, Escape, Reset)
 		}
 		// IsFifo
 		if node.Mode()&os.ModeNamedPipe == os.ModeNamedPipe {
