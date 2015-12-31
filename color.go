@@ -46,17 +46,13 @@ func ANSIColor(node *Node, s string) string {
 		style = "40;1;35"
 	case mode&os.ModeDevice != 0 || mode&os.ModeCharDevice != 0:
 		style = "40;1;33"
-	default:
-		// IsSymlink
-		if node.Mode()&os.ModeSymlink == os.ModeSymlink {
-			// IsOrphan
-			if _, err := filepath.EvalSymlinks(node.path); err != nil {
-				// Error link color
-				return fmt.Sprintf("%s[40;%d;%dm%s%s[%dm", Escape, Bold, Red, s, Escape, Reset)
-			} else {
-				style = "1;36"
-			}
+	case mode&os.ModeSymlink != 0:
+		if _, err := filepath.EvalSymlinks(node.path); err != nil {
+			style = "40;1;31"
+		} else {
+			style = "1;36"
 		}
+	default:
 		// IsExec
 		// Refactor after write some tests
 		// http://stackoverflow.com/questions/13098620/using-stat-to-check-if-a-file-is-executable-in-c
