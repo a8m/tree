@@ -11,6 +11,7 @@ import (
 const Escape = "\x1b"
 const (
 	Reset int = 0
+	// Not used, remove.
 	Bold  int = 1
 	Black int = iota + 28
 	Red

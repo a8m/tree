@@ -31,6 +31,7 @@ var modeTests = []struct {
 	expected string
 	mode     os.FileMode
 }{
+	{"", "simple", "simple", os.FileMode(0)},
 	{"", "dir", "\x1b[1;34mdir\x1b[0m", os.ModeDir},
 	{"", "socket", "\x1b[40;1;35msocket\x1b[0m", os.ModeSocket},
 	{"", "fifo", "\x1b[40;33mfifo\x1b[0m", os.ModeNamedPipe},
