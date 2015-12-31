@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall"
 )
 
 const Escape = "\x1b"
@@ -52,13 +53,10 @@ func ANSIColor(node *Node, s string) string {
 		} else {
 			style = "1;36"
 		}
+	case mode&(syscall.S_IXUSR|syscall.S_IXGRP|syscall.S_IXOTH) != 0:
+		style = "1;32"
 	default:
-		// IsExec
-		// Refactor after write some tests
-		// http://stackoverflow.com/questions/13098620/using-stat-to-check-if-a-file-is-executable-in-c
-		//if node.Mode()&(syscall.S_IXUSR|syscall.S_IXGRP|syscall.S_IXOTH) != 0 {
-		//	return fmt.Sprintf("%s[01;%dm%s%s[%dm", Escape, Green, s, Escape, Reset)
-		//}
+		return s
 	}
 	return fmt.Sprintf("%s[%sm%s%s[%dm", Escape, style, s, Escape, Reset)
 }

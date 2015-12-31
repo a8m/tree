@@ -2,6 +2,7 @@ package tree
 
 import (
 	"os"
+	"syscall"
 	"testing"
 )
 
@@ -37,6 +38,7 @@ var modeTests = []struct {
 	{"", "char", "\x1b[40;1;33mchar\x1b[0m", os.ModeCharDevice},
 	{"", "exist-symlink", "\x1b[1;36mexist-symlink\x1b[0m", os.ModeSymlink},
 	{"fake-path-a8m", "fake-path", "\x1b[40;1;31mfake-path\x1b[0m", os.ModeSymlink},
+	{"", "exec", "\x1b[1;32mexec\x1b[0m", os.FileMode(syscall.S_IXUSR)},
 }
 
 func TestFileMode(t *testing.T) {
