@@ -14,11 +14,15 @@ type file struct {
 	files   []*file
 	lastMod time.Time
 	stat_t  interface{}
+	mode    os.FileMode
 }
 
 func (f file) Name() string { return f.name }
 func (f file) Size() int64  { return f.size }
 func (f file) Mode() (o os.FileMode) {
+	if f.mode != o {
+		return f.mode
+	}
 	if f.stat_t != nil {
 		stat := (f.stat_t).(*syscall.Stat_t)
 		o = os.FileMode(stat.Mode)
@@ -141,24 +145,20 @@ var listTests = []treeTest{
 // Tests
 func TestSimple(t *testing.T) {
 	root := &file{
-		"root",
-		200,
-		[]*file{
-			&file{"a", 50, nil, time.Now(), nil},
-			&file{"b", 50, nil, time.Now(), nil},
+		name: "root",
+		size: 200,
+		files: []*file{
+			&file{name: "a", size: 50},
+			&file{name: "b", size: 50},
 			&file{
-				"c",
-				100,
-				[]*file{
-					&file{"d", 50, nil, time.Now(), nil},
-					&file{"e", 50, nil, time.Now(), nil},
-					&file{".f", 0, nil, time.Now(), nil},
+				name: "c",
+				size: 100,
+				files: []*file{
+					&file{name: "d", size: 50},
+					&file{name: "e", size: 50},
+					&file{name: ".f", size: 0},
 				},
-				time.Now(),
-				nil},
-		},
-		time.Now(),
-		nil,
+			}},
 	}
 	fs.clean().addFile(root.name, root)
 	for _, test := range listTests {
@@ -217,17 +217,15 @@ func TestSort(t *testing.T) {
 	bTime, _ := time.Parse(tFmt, "2015-Sep-01")
 	cTime, _ := time.Parse(tFmt, "2015-Oct-01")
 	root := &file{
-		"root",
-		200,
-		[]*file{
-			&file{"b", 11, nil, bTime, nil},
-			&file{"c", 10, []*file{
-				&file{"d", 10, nil, cTime, nil},
-			}, cTime, nil},
-			&file{"a", 9, nil, aTime, nil},
+		name: "root",
+		size: 200,
+		files: []*file{
+			&file{name: "b", size: 11, lastMod: bTime},
+			&file{name: "c", size: 10, files: []*file{
+				&file{name: "d", size: 10, lastMod: cTime},
+			}, lastMod: cTime},
+			&file{name: "a", size: 9, lastMod: aTime},
 		},
-		time.Now(),
-		nil,
 	}
 	fs.clean().addFile(root.name, root)
 	for _, test := range sortTests {
@@ -278,15 +276,14 @@ func TestGraphics(t *testing.T) {
 	bTime, _ := time.Parse(tFmt, "2006-Jan-28")
 	cTime, _ := time.Parse(tFmt, "2015-Jul-12")
 	root := &file{
-		"root",
-		11499,
-		[]*file{
-			&file{"a", 1500, nil, aTime, &syscall.Stat_t{Gid: 1, Mode: 0644}},
-			&file{"b", 9999, nil, bTime, &syscall.Stat_t{Gid: 2, Mode: 0755}},
-			&file{"c", 1000, nil, cTime, &syscall.Stat_t{Gid: 1, Mode: 0666}},
+		name: "root",
+		size: 11499,
+		files: []*file{
+			&file{name: "a", size: 1500, lastMod: aTime, stat_t: &syscall.Stat_t{Gid: 1, Mode: 0644}},
+			&file{name: "b", size: 9999, lastMod: bTime, stat_t: &syscall.Stat_t{Gid: 2, Mode: 0755}},
+			&file{name: "c", size: 1000, lastMod: cTime, stat_t: &syscall.Stat_t{Gid: 1, Mode: 0666}},
 		},
-		time.Now(),
-		&syscall.Stat_t{Gid: 1},
+		stat_t: &syscall.Stat_t{Gid: 1},
 	}
 	fs.clean().addFile(root.name, root)
 	for _, test := range graphicTests {

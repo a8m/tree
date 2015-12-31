@@ -16,9 +16,9 @@ var extsTests = []struct {
 
 func TestExtension(t *testing.T) {
 	for _, test := range extsTests {
-		f := &file{name: test.name}
-		n := &Node{FileInfo: f}
-		if actual := ANSIColor(n, f.name); actual != test.expected {
+		fi := &file{name: test.name}
+		no := &Node{FileInfo: fi}
+		if actual := ANSIColor(no, fi.name); actual != test.expected {
 			t.Errorf("\ngot:\n%+v\nexpected:\n%+v", actual, test.expected)
 		}
 	}
@@ -29,5 +29,15 @@ var modeTests = []struct {
 	expected string
 	mode     os.FileMode
 }{
-	{"dir", "dir", os.ModeDir},
+	{"dir", "\x1b[1;34mdir\x1b[0m", os.ModeDir},
+}
+
+func TestFileMode(t *testing.T) {
+	for _, test := range modeTests {
+		fi := &file{name: test.name, mode: test.mode}
+		no := &Node{FileInfo: fi}
+		if actual := ANSIColor(no, fi.name); actual != test.expected {
+			t.Errorf("\ngot:\n%+v\nexpected:\n%+v", actual, test.expected)
+		}
+	}
 }

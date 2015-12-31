@@ -38,7 +38,7 @@ func ANSIColor(node *Node, s string) string {
 		".rm", ".tga", ".tif", ".wav", ".wmv",
 		".xbm", ".xpm"}, ext):
 		color = Magenta
-	case node.IsDir() || mode&os.ModeDir == os.ModeDir:
+	case node.IsDir() || mode&os.ModeDir != 0:
 		color = Blue
 	default:
 		// IsSymlink
