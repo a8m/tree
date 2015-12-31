@@ -40,10 +40,12 @@ func ANSIColor(node *Node, s string) string {
 		style = "1;35"
 	case node.IsDir() || mode&os.ModeDir != 0:
 		style = "1;34"
-	case mode&os.ModeSocket != 0:
-		style = "40;1;35"
 	case mode&os.ModeNamedPipe != 0:
 		style = "40;33"
+	case mode&os.ModeSocket != 0:
+		style = "40;1;35"
+	case mode&os.ModeDevice != 0:
+		style = "40;1;33"
 	default:
 		// IsSymlink
 		if node.Mode()&os.ModeSymlink == os.ModeSymlink {
@@ -54,10 +56,6 @@ func ANSIColor(node *Node, s string) string {
 			} else {
 				style = "1;36"
 			}
-		}
-		// IsBlk - a block special file (a device like a disk)
-		if node.Mode()&os.ModeDevice == os.ModeDevice {
-			return fmt.Sprintf("%s[40;%d;01m%s%s[%dm", Escape, Yellow, s, Escape, Reset)
 		}
 		// IsChr
 		if node.Mode()&os.ModeCharDevice == os.ModeCharDevice {
