@@ -296,3 +296,29 @@ func TestGraphics(t *testing.T) {
 		out.clear()
 	}
 }
+
+var symlinkTests = []treeTest{
+	{"symlink", &Options{Fs: fs, OutFile: out}, `root
+└── symlink -> root/symlink
+`}, {"symlink-rec", &Options{Fs: fs, OutFile: out, FollowLink: true}, `root
+└── symlink -> root/symlink [recursive, not followed]
+`}}
+
+func TestSymlink(t *testing.T) {
+	root := &file{
+		name: "root",
+		files: []*file{
+			&file{name: "symlink", mode: os.ModeSymlink, files: make([]*file, 0)},
+		},
+	}
+	fs.clean().addFile(root.name, root)
+	for _, test := range symlinkTests {
+		inf := New(root.name)
+		inf.Visit(test.opts)
+		inf.Print("", test.opts)
+		if !out.equal(test.expected) {
+			t.Errorf("%s:\ngot:\n%+v\nexpected:\n%+v", test.name, out.str, test.expected)
+		}
+		out.clear()
+	}
+}
