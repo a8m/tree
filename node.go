@@ -15,10 +15,11 @@ import (
 
 type Node struct {
 	os.FileInfo
-	path  string
-	depth int
-	err   error
-	nodes Nodes
+	path   string
+	depth  int
+	err    error
+	nodes  Nodes
+	vpaths map[string]bool
 }
 
 type Nodes []*Node
@@ -39,6 +40,7 @@ type Options struct {
 	DirsOnly   bool
 	FullPath   bool
 	IgnoreCase bool
+	FollowLink bool
 	DeepLevel  int
 	Pattern    string
 	IPattern   string
@@ -68,11 +70,17 @@ type Options struct {
 
 // New get path and create new node
 func New(path string) *Node {
-	return &Node{path: path}
+	return &Node{path: path, vpaths: make(map[string]bool)}
 }
 
 // Visit fn
 func (node *Node) Visit(opts *Options) (dirs, files int) {
+	// visited paths
+	if path, err := filepath.Abs(node.path); err == nil {
+		path = filepath.Clean(path)
+		node.vpaths[path] = true
+	}
+	// stat
 	fi, err := opts.Fs.Stat(node.path)
 	if err != nil {
 		node.err = err
@@ -98,8 +106,9 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 			continue
 		}
 		nnode := &Node{
-			path:  filepath.Join(node.path, name),
-			depth: node.depth + 1,
+			path:   filepath.Join(node.path, name),
+			depth:  node.depth + 1,
+			vpaths: node.vpaths,
 		}
 		d, f := nnode.Visit(opts)
 		if nnode.err == nil && !nnode.IsDir() {
@@ -233,18 +242,33 @@ func (node *Node) Print(indent string, opts *Options) {
 	}
 	// IsSymlink
 	if node.Mode()&os.ModeSymlink == os.ModeSymlink {
-		target, _ := os.Readlink(node.path)
-		if opts.Colorize {
-			targetPath, err := filepath.EvalSymlinks(node.path)
-			if err != nil {
-				targetPath = target
-			}
-			fi, err := opts.Fs.Stat(targetPath)
-			if fi != nil {
-				target = ANSIColor(&Node{FileInfo: fi, path: target}, target)
+		vtarget, err := os.Readlink(node.path)
+		if err != nil {
+			vtarget = node.path
+		}
+		targetPath, err := filepath.EvalSymlinks(node.path)
+		if err != nil {
+			targetPath = vtarget
+		}
+		fi, err := opts.Fs.Stat(targetPath)
+		if opts.Colorize && fi != nil {
+			vtarget = ANSIColor(&Node{FileInfo: fi, path: vtarget}, vtarget)
+		}
+		name = fmt.Sprintf("%s -> %s", name, vtarget)
+		// Follow symbolic links like directories
+		if opts.FollowLink {
+			path, err := filepath.Abs(targetPath)
+			if err == nil && fi != nil && fi.IsDir() {
+				if _, ok := node.vpaths[filepath.Clean(path)]; !ok {
+					inf := &Node{FileInfo: fi, path: targetPath}
+					inf.vpaths = node.vpaths
+					inf.Visit(opts)
+					node.nodes = inf.nodes
+				} else {
+					name += " [recursive, not followed]"
+				}
 			}
 		}
-		name = fmt.Sprintf("%s -> %s", name, target)
 	}
 	// Print file details
 	fmt.Fprintln(opts.OutFile, name)

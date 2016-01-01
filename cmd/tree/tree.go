@@ -15,6 +15,7 @@ var (
 	f          = flag.Bool("f", false, "")
 	ignorecase = flag.Bool("ignore-case", false, "")
 	noreport   = flag.Bool("noreport", false, "")
+	l          = flag.Bool("l", false, "")
 	L          = flag.Int("L", 0, "")
 	P          = flag.String("P", "", "")
 	I          = flag.String("I", "", "")
@@ -96,6 +97,7 @@ func main() {
 		DirsOnly:   *d,
 		FullPath:   *f,
 		DeepLevel:  *L,
+		FollowLink: *l,
 		Pattern:    *P,
 		IPattern:   *I,
 		IgnoreCase: *ignorecase,
