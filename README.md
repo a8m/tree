@@ -1,9 +1,4 @@
 tree command
 ---
+> tree - implementation of the `tree` command that can be used programmticaly.
 
-TODO
-====
-- Listing options
-- Files options
-- Graphics options
-- Output options
