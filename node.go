@@ -170,7 +170,9 @@ func (node *Node) sort(opts *Options) {
 	}
 }
 
-func (node *Node) Print(indent string, opts *Options) {
+func (node *Node) Print(opts *Options) { node.print("", opts) }
+
+func (node *Node) print(indent string, opts *Options) {
 	if node.err != nil {
 		err := strings.Split(node.err.Error(), ": ")[1]
 		fmt.Printf("%s [%s]\n", node.path, err)
@@ -284,7 +286,7 @@ func (node *Node) Print(indent string, opts *Options) {
 				fmt.Fprintf(opts.OutFile, indent+"├── ")
 			}
 		}
-		nnode.Print(indent+add, opts)
+		nnode.print(indent+add, opts)
 	}
 }
 

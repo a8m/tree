@@ -132,7 +132,7 @@ func main() {
 			}
 			nd, nf = nd+d, nf+f
 		}
-		inf.Print("", opts)
+		inf.Print(opts)
 	}
 	// Print footer report
 	if !*noreport {
