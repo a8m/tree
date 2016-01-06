@@ -164,7 +164,7 @@ func TestSimple(t *testing.T) {
 	for _, test := range listTests {
 		inf := New(root.name)
 		inf.Visit(test.opts)
-		inf.Print("", test.opts)
+		inf.Print(test.opts)
 		if !out.equal(test.expected) {
 			t.Errorf("%s:\ngot:\n%+v\nexpected:\n%+v", test.name, out.str, test.expected)
 		}
@@ -231,7 +231,7 @@ func TestSort(t *testing.T) {
 	for _, test := range sortTests {
 		inf := New(root.name)
 		inf.Visit(test.opts)
-		inf.Print("", test.opts)
+		inf.Print(test.opts)
 		if !out.equal(test.expected) {
 			t.Errorf("%s:\ngot:\n%+v\nexpected:\n%+v", test.name, out.str, test.expected)
 		}
@@ -289,7 +289,7 @@ func TestGraphics(t *testing.T) {
 	for _, test := range graphicTests {
 		inf := New(root.name)
 		inf.Visit(test.opts)
-		inf.Print("", test.opts)
+		inf.Print(test.opts)
 		if !out.equal(test.expected) {
 			t.Errorf("%s:\ngot:\n%+v\nexpected:\n%+v", test.name, out.str, test.expected)
 		}
@@ -315,7 +315,7 @@ func TestSymlink(t *testing.T) {
 	for _, test := range symlinkTests {
 		inf := New(root.name)
 		inf.Visit(test.opts)
-		inf.Print("", test.opts)
+		inf.Print(test.opts)
 		if !out.equal(test.expected) {
 			t.Errorf("%s:\ngot:\n%+v\nexpected:\n%+v", test.name, out.str, test.expected)
 		}

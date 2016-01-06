@@ -84,7 +84,8 @@ func main() {
 		switch *sort {
 		case "version", "mtime", "ctime", "name", "size":
 		default:
-			msg := fmt.Sprintf("sort type '%s' not valid, should be one of: name,version,size,mtime,ctime", *sort)
+			msg := fmt.Sprintf("sort type '%s' not valid, should be one of: "+
+				"name,version,size,mtime,ctime", *sort)
 			errAndExit(errors.New(msg))
 		}
 	}

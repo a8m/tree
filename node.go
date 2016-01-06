@@ -174,7 +174,10 @@ func (node *Node) Print(opts *Options) { node.print("", opts) }
 
 func (node *Node) print(indent string, opts *Options) {
 	if node.err != nil {
-		err := strings.Split(node.err.Error(), ": ")[1]
+		err := node.err.Error()
+		if msgs := strings.Split(err, ": "); len(msgs) > 1 {
+			err = msgs[1]
+		}
 		fmt.Printf("%s [%s]\n", node.path, err)
 		return
 	}
