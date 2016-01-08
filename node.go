@@ -13,6 +13,8 @@ import (
 	"syscall"
 )
 
+// Node represent some node in the tree
+// contains FileInfo, and its childs
 type Node struct {
 	os.FileInfo
 	path   string
@@ -22,16 +24,19 @@ type Node struct {
 	vpaths map[string]bool
 }
 
+// List of nodes
 type Nodes []*Node
 
-func (n Nodes) Len() int      { return len(n) }
-func (n Nodes) Swap(i, j int) { n[i], n[j] = n[j], n[i] }
-
+// To use this package programmatically, you must implement this
+// interface.
+// For example: PTAL on 'cmd/tree/tree.go'
 type Fs interface {
 	Stat(path string) (os.FileInfo, error)
 	ReadDir(path string) ([]string, error)
 }
 
+// Options store the configuration for specific tree.
+// Note, that 'Fs', and 'OutFile' are required (OutFile can be os.Stdout).
 type Options struct {
 	Fs      Fs
 	OutFile io.Writer
@@ -68,12 +73,12 @@ type Options struct {
 	Colorize bool
 }
 
-// New get path and create new node
+// New get path and create new node(root).
 func New(path string) *Node {
 	return &Node{path: path, vpaths: make(map[string]bool)}
 }
 
-// Visit fn
+// Visit all files under the given node.
 func (node *Node) Visit(opts *Options) (dirs, files int) {
 	// visited paths
 	if path, err := filepath.Abs(node.path); err == nil {
@@ -170,6 +175,7 @@ func (node *Node) sort(opts *Options) {
 	}
 }
 
+// Print nodes based on the given configuration.
 func (node *Node) Print(opts *Options) { node.print("", opts) }
 
 func (node *Node) print(indent string, opts *Options) {
