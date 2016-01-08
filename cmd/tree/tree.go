@@ -43,6 +43,43 @@ var (
 	C = flag.Bool("C", false, "")
 )
 
+var usage = `Usage: tree [options...] [paths...]
+
+Options:
+    ------- Listing options -------
+    -a		    All files are listed.
+    -d		    List directories only.
+    -l		    Follow symbolic links like directories.
+    -f		    Print the full path prefix for each file.
+    -L		    Descend only level directories deep.
+    -P		    List only those files that match the pattern given.
+    -I		    Do not list files that match the given pattern.
+    --ignore-case   Ignore case when pattern matching.
+    --noreport	    Turn off file/directory count at end of tree listing.
+    -o filename	    Output to file instead of stdout.
+    -------- File options ---------
+    -Q		    Quote filenames with double quotes.
+    -p		    Print the protections for each file.
+    -u		    Displays file owner or UID number.
+    -g		    Displays file group owner or GID number.
+    -s		    Print the size in bytes of each file.
+    -h		    Print the size in a more human readable way.
+    -D		    Print the date of last modification or (-c) status change.
+    --inodes	    Print inode number of each file.
+    --device	    Print device ID number to which each file belongs.
+    ------- Sorting options -------
+    -v		    Sort files alphanumerically by version.
+    -t		    Sort files by last modification time.
+    -c		    Sort files by last status change time.
+    -U		    Leave files unsorted.
+    -r		    Reverse the order of the sort.
+    --dirsfirst	    List directories before files (-U disables).
+    --sort X	    Select sort: name,version,size,mtime,ctime.
+    ------- Graphics options ------
+    -i		    Don't print indentation lines.
+    -C		    Turn colorization on always.
+`
+
 type fs struct{}
 
 func (f *fs) Stat(path string) (os.FileInfo, error) {
@@ -62,6 +99,7 @@ func (f *fs) ReadDir(path string) ([]string, error) {
 }
 
 func main() {
+	flag.Usage = func() { fmt.Fprint(os.Stderr, usage) }
 	var nd, nf int
 	var dirs = []string{"."}
 	flag.Parse()
@@ -91,9 +129,10 @@ func main() {
 	}
 	// Set options
 	opts := &tree.Options{
-		Fs: new(fs),
+		// Required
+		Fs:      new(fs),
+		OutFile: outFile,
 		// List
-		OutFile:    outFile,
 		All:        *a,
 		DirsOnly:   *d,
 		FullPath:   *f,
