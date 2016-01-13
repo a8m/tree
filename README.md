@@ -8,7 +8,7 @@ $ go get github.com/a8m/tree
 ```
 
 #### How to use `tree` programmatically ?
-You can take a look on `cmd/tree`, and [s3tree](http://github.com/a8m/s3tree) or see the example below.
+You can take a look on [`cmd/tree`](https://github.com/a8m/tree/blob/master/cmd/tree/tree.go), and [s3tree](http://github.com/a8m/s3tree) or see the example below.
 ```go
 import (
     "github.com/a8m/tree"
