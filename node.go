@@ -282,6 +282,7 @@ func (node *Node) print(indent string, opts *Options) {
 		}
 	}
 	// Print file details
+	// the main idea of the print logic came from here: github.com/campoy/tools/tree
 	fmt.Fprintln(opts.OutFile, name)
 	add := "│   "
 	for i, nnode := range node.nodes {
