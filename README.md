@@ -1,6 +1,6 @@
-tree command
+tree
 ---
-> tree - implementation of the `tree` command that can be used programmticaly.
+> An implementation of the [`tree`](http://mama.indstate.edu/users/ice/tree/) command written in Go, that can be programmatically.
 
 #### Installation:
 ```sh
@@ -13,6 +13,7 @@ You can take a look on `cmd/tree`, and [s3tree](http://github.com/a8m/s3tree) or
 import (
     "github.com/a8m/tree"
 )
+
 func main() {
     opts := &tree.Options{
         // Fs, and OutFile are required fields.
