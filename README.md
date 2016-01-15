@@ -1,6 +1,6 @@
 tree
 ---
-> An implementation of the [`tree`](http://mama.indstate.edu/users/ice/tree/) command written in Go, that can be programmatically.
+> An implementation of the [`tree`](http://mama.indstate.edu/users/ice/tree/) command written in Go, that can be used  programmatically.
 
 #### Installation:
 ```sh
@@ -17,7 +17,7 @@ import (
 func main() {
     opts := &tree.Options{
         // Fs, and OutFile are required fields.
-        // Fs should implement the tree file-system interface(see: tree.Fs),
+        // fs should implement the tree file-system interface(see: tree.Fs),
         // and OutFile should be type io.Writer
         Fs: fs,
         OutFile: os.Stdout,
