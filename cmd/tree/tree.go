@@ -16,7 +16,7 @@ var (
 	ignorecase = flag.Bool("ignore-case", false, "")
 	noreport   = flag.Bool("noreport", false, "")
 	l          = flag.Bool("l", false, "")
-	L          = flag.Int("L", 0, "")
+	L          = flag.Int("L", 3, "")
 	P          = flag.String("P", "", "")
 	I          = flag.String("I", "", "")
 	o          = flag.String("o", "", "")
