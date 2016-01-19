@@ -4,7 +4,7 @@ tree
 
 #### Installation:
 ```sh
-$ go get github.com/a8m/tree
+$ go get github.com/a8m/tree/cmd/tree
 ```
 
 #### How to use `tree` programmatically ?
