@@ -1,4 +1,4 @@
-tree
+tree [![Build status][travis-image]][travis-url] [![License][license-image]][license-url]
 ---
 > An implementation of the [`tree`](http://mama.indstate.edu/users/ice/tree/) command written in Go, that can be used  programmatically.
 
@@ -33,3 +33,9 @@ func main() {
 
 ### License
 MIT
+
+
+[travis-image]: https://img.shields.io/travis/a8m/tree.svg?style=flat-square
+[travis-url]: https://travis-ci.org/a8m/tree
+[license-image]: http://img.shields.io/npm/l/deep-keys.svg?style=flat-square
+[license-url]: LICENSE
