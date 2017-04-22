@@ -165,6 +165,8 @@ func (node *Node) sort(opts *Options) {
 		fn = SizeSort
 	case opts.NameSort:
 		fn = NameSort
+	default:
+		fn = NameSort // Default should be sorted, not unsorted.
 	}
 	if fn != nil {
 		if opts.ReverSort {
