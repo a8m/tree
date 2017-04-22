@@ -1,6 +1,7 @@
 package tree
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -180,16 +181,25 @@ func (node *Node) sort(opts *Options) {
 // Print nodes based on the given configuration.
 func (node *Node) Print(opts *Options) { node.print("", opts) }
 
-func dirRecursiveSize(node *Node) (size int64) {
+func dirRecursiveSize(opts *Options, node *Node) (size int64, err error) {
+	if opts.DeepLevel > 0 && node.depth >= opts.DeepLevel {
+		err = errors.New("Depth too high")
+	}
+
 	for _, nnode := range node.nodes {
 		if nnode.err != nil {
+			err = nnode.err
 			continue
 		}
 
 		if !nnode.IsDir() {
 			size += nnode.Size()
 		} else {
-			size += dirRecursiveSize(nnode)
+			nsize, e := dirRecursiveSize(opts, nnode)
+			size += nsize
+			if e != nil {
+				err = e
+			}
 		}
 	}
 	return
@@ -257,8 +267,14 @@ func (node *Node) print(indent string, opts *Options) {
 		// Size
 		if opts.ByteSize || opts.UnitSize {
 			var size string
-			rsize := dirRecursiveSize(node)
-			if opts.UnitSize {
+			rsize, err := dirRecursiveSize(opts, node)
+			if err != nil && rsize <= 0 {
+				if opts.UnitSize {
+					size = "????"
+				} else {
+					size = "???????????"
+				}
+			} else if opts.UnitSize {
 				size = fmt.Sprintf("%4s", formatBytes(rsize))
 			} else {
 				size = fmt.Sprintf("%11d", rsize)
