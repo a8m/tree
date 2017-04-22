@@ -248,11 +248,11 @@ c
 ├── "a"
 ├── "b"
 └── "c"
-`}, {"byte-size", &Options{Fs: fs, OutFile: out, ByteSize: true}, `root
+`}, {"byte-size", &Options{Fs: fs, OutFile: out, ByteSize: true}, `[      12499]  root
 ├── [       1500]  a
 ├── [       9999]  b
 └── [       1000]  c
-`}, {"unit-size", &Options{Fs: fs, OutFile: out, UnitSize: true}, `root
+`}, {"unit-size", &Options{Fs: fs, OutFile: out, UnitSize: true}, `[ 12K]  root
 ├── [1.5K]  a
 ├── [9.8K]  b
 └── [1000]  c
