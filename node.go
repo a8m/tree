@@ -178,6 +178,21 @@ func (node *Node) sort(opts *Options) {
 // Print nodes based on the given configuration.
 func (node *Node) Print(opts *Options) { node.print("", opts) }
 
+func dirRecursiveSize(node *Node) (size int64) {
+	for _, nnode := range node.nodes {
+		if nnode.err != nil {
+			continue
+		}
+
+		if !nnode.IsDir() {
+			size += nnode.Size()
+		} else {
+			size += dirRecursiveSize(nnode)
+		}
+	}
+	return
+}
+
 func (node *Node) print(indent string, opts *Options) {
 	if node.err != nil {
 		err := node.err.Error()
@@ -230,6 +245,23 @@ func (node *Node) print(indent string, opts *Options) {
 		// Last modification
 		if opts.LastMod {
 			props = append(props, node.ModTime().Format("Jan 02 15:04"))
+		}
+		// Print properties
+		if len(props) > 0 {
+			fmt.Fprintf(opts.OutFile, "[%s]  ", strings.Join(props, " "))
+		}
+	} else {
+		var props []string
+		// Size
+		if opts.ByteSize || opts.UnitSize {
+			var size string
+			rsize := dirRecursiveSize(node)
+			if opts.UnitSize {
+				size = fmt.Sprintf("%4s", formatBytes(rsize))
+			} else {
+				size = fmt.Sprintf("%11d", rsize)
+			}
+			props = append(props, size)
 		}
 		// Print properties
 		if len(props) > 0 {
