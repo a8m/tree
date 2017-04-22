@@ -110,7 +110,7 @@ var listTests = []treeTest{
 └── c
     ├── d
     └── e
-`}, {"all", &Options{Fs: fs, OutFile: out, All: true}, `root
+`}, {"all", &Options{Fs: fs, OutFile: out, All: true, NoSort: true}, `root
 ├── a
 ├── b
 └── c
