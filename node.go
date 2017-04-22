@@ -332,20 +332,39 @@ func (node *Node) print(indent string, opts *Options) {
 	}
 }
 
+const (
+	_        = iota // ignore first value by assigning to blank identifier
+	KB int64 = 1 << (10 * iota)
+	MB
+	GB
+	TB
+	PB
+	EB
+)
+
 // Convert bytes to human readable string. Like a 2 MB, 64.2 KB, 52 B
 func formatBytes(i int64) (result string) {
 	var n float64
 	sFmt, eFmt := "%.01f", ""
 	switch {
-	case i > (1024 * 1024 * 1024):
+	case i > EB:
+		eFmt = "E"
+		n = float64(i) / float64(EB)
+	case i > PB:
+		eFmt = "P"
+		n = float64(i) / float64(PB)
+	case i > TB:
+		eFmt = "T"
+		n = float64(i) / float64(TB)
+	case i > GB:
 		eFmt = "G"
-		n = float64(i) / 1024 / 1024 / 1024
-	case i > (1024 * 1024):
+		n = float64(i) / float64(GB)
+	case i > MB:
 		eFmt = "M"
-		n = float64(i) / 1024 / 1024
-	case i > 1024:
+		n = float64(i) / float64(MB)
+	case i > KB:
 		eFmt = "K"
-		n = float64(i) / 1024
+		n = float64(i) / float64(KB)
 	default:
 		sFmt = "%.0f"
 		n = float64(i)
