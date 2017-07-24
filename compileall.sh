@@ -1,5 +1,10 @@
 #!/bin/bash
 
+go tool dist list >/dev/null || {
+    echo 1>&2 "go tool dist list not supported - can't check compile"
+    exit 0
+}
+
 while read -r line; do
     parts=(${line//\// })
     export GOOS=${parts[0]}
