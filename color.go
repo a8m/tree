@@ -5,7 +5,6 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"syscall"
 )
 
 const Escape = "\x1b"
@@ -54,7 +53,7 @@ func ANSIColor(node *Node, s string) string {
 		} else {
 			style = "1;36"
 		}
-	case mode&(syscall.S_IXUSR|syscall.S_IXGRP|syscall.S_IXOTH) != 0:
+	case mode&modeExecute != 0:
 		style = "1;32"
 	default:
 		return s

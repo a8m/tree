@@ -11,7 +11,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"syscall"
 )
 
 // Node represent some node in the tree
@@ -216,33 +215,33 @@ func (node *Node) print(indent string, opts *Options) {
 	}
 	if !node.IsDir() {
 		var props []string
-		var stat = node.Sys().(*syscall.Stat_t)
+		ok, inode, device, uid, gid := getStat(node)
 		// inodes
-		if opts.Inodes {
-			props = append(props, fmt.Sprintf("%d", stat.Ino))
+		if ok && opts.Inodes {
+			props = append(props, fmt.Sprintf("%d", inode))
 		}
 		// device
-		if opts.Device {
-			props = append(props, fmt.Sprintf("%3d", stat.Dev))
+		if ok && opts.Device {
+			props = append(props, fmt.Sprintf("%3d", device))
 		}
 		// Mode
 		if opts.FileMode {
 			props = append(props, node.Mode().String())
 		}
 		// Owner/Uid
-		if opts.ShowUid {
-			uid := strconv.Itoa(int(stat.Uid))
-			if u, err := user.LookupId(uid); err != nil {
-				props = append(props, fmt.Sprintf("%-8s", uid))
+		if ok && opts.ShowUid {
+			uidStr := strconv.Itoa(int(uid))
+			if u, err := user.LookupId(uidStr); err != nil {
+				props = append(props, fmt.Sprintf("%-8s", uidStr))
 			} else {
 				props = append(props, fmt.Sprintf("%-8s", u.Username))
 			}
 		}
 		// Gorup/Gid
 		// TODO: support groupname
-		if opts.ShowGid {
-			gid := strconv.Itoa(int(stat.Gid))
-			props = append(props, fmt.Sprintf("%-4s", gid))
+		if ok && opts.ShowGid {
+			gidStr := strconv.Itoa(int(gid))
+			props = append(props, fmt.Sprintf("%-4s", gidStr))
 		}
 		// Size
 		if opts.ByteSize || opts.UnitSize {
