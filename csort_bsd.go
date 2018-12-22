@@ -1,4 +1,4 @@
-//+build darwin freebsd netbsd
+//+build darwin freebsd,!go1.12 netbsd
 
 package tree
 

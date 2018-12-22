@@ -1,4 +1,4 @@
-//+build linux openbsd dragonfly android solaris
+//+build linux openbsd dragonfly android solaris freebsd,go1.12
 
 package tree
 
