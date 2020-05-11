@@ -374,22 +374,22 @@ func formatBytes(i int64) (result string) {
 	var n float64
 	sFmt, eFmt := "%.01f", ""
 	switch {
-	case i > EB:
+	case i >= EB:
 		eFmt = "E"
 		n = float64(i) / float64(EB)
-	case i > PB:
+	case i >= PB:
 		eFmt = "P"
 		n = float64(i) / float64(PB)
-	case i > TB:
+	case i >= TB:
 		eFmt = "T"
 		n = float64(i) / float64(TB)
-	case i > GB:
+	case i >= GB:
 		eFmt = "G"
 		n = float64(i) / float64(GB)
-	case i > MB:
+	case i >= MB:
 		eFmt = "M"
 		n = float64(i) / float64(MB)
-	case i > KB:
+	case i >= KB:
 		eFmt = "K"
 		n = float64(i) / float64(KB)
 	default:
