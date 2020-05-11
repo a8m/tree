@@ -363,6 +363,12 @@ const (
 	EB
 )
 
+// round use like so: "%.1f", round(f, 0.1) or "%.0f", round(f, 1)
+// Otherwise 9.9999 is < 10 but "%.1f" will give "10.0"
+func round(x, unit float64) float64 {
+	return float64(int64(x/unit+0.5)) * unit
+}
+
 // Convert bytes to human readable string. Like a 2 MB, 64.2 KB, 52 B
 func formatBytes(i int64) (result string) {
 	var n float64
@@ -390,7 +396,7 @@ func formatBytes(i int64) (result string) {
 		sFmt = "%.0f"
 		n = float64(i)
 	}
-	if eFmt != "" && n >= 10 {
+	if eFmt != "" && round(n, 0.1) >= 10 {
 		sFmt = "%.0f"
 	}
 	result = fmt.Sprintf(sFmt+eFmt, n)
