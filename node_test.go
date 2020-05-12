@@ -275,8 +275,8 @@ c
 `, 0, 3},
 	{"unit-size", &Options{Fs: fs, OutFile: out, UnitSize: true}, `[ 12K]  root
 ├── [1.5K]  a
-├── [9.8K]  b
-└── [1000]  c
+├── [ 10K]  b
+└── [1.0K]  c
 `, 0, 3},
 	{"show-gid", &Options{Fs: fs, OutFile: out, ShowGid: true}, `root
 ├── [1   ]  a
