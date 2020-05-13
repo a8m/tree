@@ -1,8 +1,10 @@
 package tree
 
 import (
+	"context"
 	"errors"
 	"fmt"
+	"golang.org/x/sync/semaphore"
 	"io"
 	"os"
 	"os/user"
@@ -11,6 +13,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 // Node represent some node in the tree
@@ -73,6 +76,10 @@ type Options struct {
 	Colorize bool
 	// Color defaults to ANSIColor()
 	Color func(*Node, string) string
+
+	// Internal data so we can do readdir()/stat() in parallel.
+	sem *semaphore.Weighted
+	res chan workerResult
 }
 
 func (opts *Options) color(node *Node, s string) string {
@@ -83,15 +90,64 @@ func (opts *Options) color(node *Node, s string) string {
 	return f(node, s)
 }
 
+// workerResult for go-ness
+type workerResult struct {
+	p *Node
+	n *Node
+	d int
+	f int
+}
+
 // New get path and create new node(root).
 func New(path string) *Node {
 	return &Node{path: path, vpaths: make(map[string]bool)}
 }
 
+func newSubNode(opts *Options, node *Node, name string) (nnode *Node, dirs, files int) {
+	nnode = &Node{
+		path:   filepath.Join(node.path, name),
+		depth:  node.depth + 1,
+		vpaths: node.vpaths,
+	}
+	d, f := nnode.Visit(opts)
+	if nnode.err == nil && !nnode.IsDir() {
+		// "dirs only" option
+		if opts.DirsOnly {
+			return nil, 0, 0
+		}
+		var rePrefix string
+		if opts.IgnoreCase {
+			rePrefix = "(?i)"
+		}
+		// Pattern matching
+		if opts.Pattern != "" {
+			re, err := regexp.Compile(rePrefix + opts.Pattern)
+			if err == nil && !re.MatchString(name) {
+				return nil, 0, 0
+			}
+		}
+		// IPattern matching
+		if opts.IPattern != "" {
+			re, err := regexp.Compile(rePrefix + opts.IPattern)
+			if err == nil && re.MatchString(name) {
+				return nil, 0, 0
+			}
+		}
+	}
+
+	return nnode, d, f
+}
+
+const semWeight = 128
+
 // Visit all files under the given node.
 func (node *Node) Visit(opts *Options) (dirs, files int) {
+	goProcs := !opts.FollowLink && (semWeight > 0)
+
 	// visited paths
-	if path, err := filepath.Abs(node.path); err == nil {
+	if !opts.FollowLink {
+		node.vpaths = nil
+	} else if path, err := filepath.Abs(node.path); err == nil {
 		path = filepath.Clean(path)
 		node.vpaths[path] = true
 	}
@@ -119,44 +175,66 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 		return
 	}
 	node.nodes = make(Nodes, 0)
-	for _, name := range names {
+	var rwg sync.WaitGroup
+	var fin chan workerResult
+	if goProcs && node.depth == 0 {
+		opts.sem = semaphore.NewWeighted(semWeight)
+		opts.res = make(chan workerResult)
+		rwg.Add(1)
+		fin = make(chan workerResult)
+		go func() {
+			defer rwg.Done()
+			defer close(fin)
+			mdirs := 0
+			mfiles := 0
+			for val := range opts.res {
+				val.p.nodes = append(val.p.nodes, val.n)
+				mdirs, mfiles = mdirs+val.d, mfiles+val.f
+			}
+			fin <- workerResult{nil, node, mdirs, mfiles}
+		}()
+	}
+	for i := range names {
+		name := names[i]
+		// fmt.Println("JDBG: beg:", name)
 		// "all" option
 		if !opts.All && strings.HasPrefix(name, ".") {
 			continue
 		}
-		nnode := &Node{
-			path:   filepath.Join(node.path, name),
-			depth:  node.depth + 1,
-			vpaths: node.vpaths,
-		}
-		d, f := nnode.Visit(opts)
-		if nnode.err == nil && !nnode.IsDir() {
-			// "dirs only" option
-			if opts.DirsOnly {
+		if goProcs && node.depth != 0 {
+			if opts.sem.TryAcquire(2) {
+				go func() {
+					defer opts.sem.Release(2)
+					nnode, d, f := newSubNode(opts, node, name)
+					if nnode == nil {
+						return
+					}
+					opts.res <- workerResult{node, nnode, d, f}
+				}()
 				continue
 			}
-			var rePrefix string
-			if opts.IgnoreCase {
-				rePrefix = "(?i)"
-			}
-			// Pattern matching
-			if opts.Pattern != "" {
-				re, err := regexp.Compile(rePrefix + opts.Pattern)
-				if err == nil && !re.MatchString(name) {
-					continue
-				}
-			}
-			// IPattern matching
-			if opts.IPattern != "" {
-				re, err := regexp.Compile(rePrefix + opts.IPattern)
-				if err == nil && re.MatchString(name) {
-					continue
-				}
-			}
+		}
+		// We ran out of semaphores, so just process the new node directly...
+		nnode, d, f := newSubNode(opts, node, name)
+		if nnode == nil {
+			continue
+		}
+		if goProcs && node.depth != 0 {
+			opts.res <- workerResult{node, nnode, d, f}
+			continue
 		}
 		node.nodes = append(node.nodes, nnode)
 		dirs, files = dirs+d, files+f
 	}
+	if goProcs && node.depth == 0 {
+		opts.sem.Acquire(context.Background(), semWeight)
+		close(opts.res)
+		val := <-fin
+		dirs += val.d
+		files += val.f
+		rwg.Wait()
+	}
+
 	// Sorting
 	if !opts.NoSort {
 		node.sort(opts)
