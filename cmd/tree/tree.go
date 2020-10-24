@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/a8m/tree"
+	"github.com/a8m/tree/ostree"
 )
 
 var (
@@ -81,24 +82,6 @@ Options:
     -C		    Turn colorization on always.
 `
 
-type fs struct{}
-
-func (f *fs) Stat(path string) (os.FileInfo, error) {
-	return os.Lstat(path)
-}
-func (f *fs) ReadDir(path string) ([]string, error) {
-	dir, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	names, err := dir.Readdirnames(-1)
-	dir.Close()
-	if err != nil {
-		return nil, err
-	}
-	return names, nil
-}
-
 func main() {
 	flag.Usage = func() { fmt.Fprint(os.Stderr, usage) }
 	var nd, nf int
@@ -131,7 +114,7 @@ func main() {
 	// Set options
 	opts := &tree.Options{
 		// Required
-		Fs:      new(fs),
+		Fs:      new(ostree.FS),
 		OutFile: outFile,
 		// List
 		All:        *a,
