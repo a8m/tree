@@ -22,6 +22,11 @@ const (
 	White
 )
 
+// ANSIColorFormat
+func ANSIColorFormat(style string, s string) string {
+	return fmt.Sprintf("%s[%sm%s%s[%dm", Escape, style, s, Escape, Reset)
+}
+
 // ANSIColor
 func ANSIColor(node *Node, s string) string {
 	var style string
@@ -58,7 +63,7 @@ func ANSIColor(node *Node, s string) string {
 	default:
 		return s
 	}
-	return fmt.Sprintf("%s[%sm%s%s[%dm", Escape, style, s, Escape, Reset)
+	return ANSIColorFormat(style, s)
 }
 
 // case-insensitive contains helper
