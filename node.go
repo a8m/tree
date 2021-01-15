@@ -71,6 +71,16 @@ type Options struct {
 	// Graphics
 	NoIndent bool
 	Colorize bool
+	// Color defaults to ANSIColor()
+	Color func(*Node, string) string
+}
+
+func (opts *Options) color(node *Node, s string) string {
+	f := opts.Color
+	if f == nil {
+		f = ANSIColor
+	}
+	return f(node, s)
 }
 
 // New get path and create new node(root).
@@ -179,6 +189,11 @@ func (node *Node) sort(opts *Options) {
 			sort.Sort(ByFunc{node.nodes, fn})
 		}
 	}
+}
+
+// Path returns the Node's absolute path
+func (node *Node) Path() string {
+	return node.path
 }
 
 // Print nodes based on the given configuration.
@@ -302,7 +317,7 @@ func (node *Node) print(indent string, opts *Options) {
 	}
 	// Colorize
 	if opts.Colorize {
-		name = ANSIColor(node, name)
+		name = opts.color(node, name)
 	}
 	// IsSymlink
 	if node.Mode()&os.ModeSymlink == os.ModeSymlink {
@@ -316,7 +331,7 @@ func (node *Node) print(indent string, opts *Options) {
 		}
 		fi, err := opts.Fs.Stat(targetPath)
 		if opts.Colorize && fi != nil {
-			vtarget = ANSIColor(&Node{FileInfo: fi, path: vtarget}, vtarget)
+			vtarget = opts.color(&Node{FileInfo: fi, path: vtarget}, vtarget)
 		}
 		name = fmt.Sprintf("%s -> %s", name, vtarget)
 		// Follow symbolic links like directories
