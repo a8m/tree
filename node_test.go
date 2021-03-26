@@ -111,56 +111,86 @@ var listTests = []treeTest{
 ├── b
 └── c
     ├── d
-    └── e
-`, 1, 4},
+    ├── e
+    └── g
+        ├── h
+        └── i
+`, 2, 6},
 	{"all", &Options{Fs: fs, OutFile: out, All: true, NoSort: true}, `root
 ├── a
 ├── b
 └── c
     ├── d
     ├── e
-    └── .f
-`, 1, 5},
+    ├── .f
+    └── g
+        ├── h
+        └── i
+`, 2, 7},
 	{"dirs", &Options{Fs: fs, OutFile: out, DirsOnly: true}, `root
 └── c
-`, 1, 0},
+    └── g
+`, 2, 0},
 	{"fullPath", &Options{Fs: fs, OutFile: out, FullPath: true}, `root
 ├── root/a
 ├── root/b
 └── root/c
     ├── root/c/d
-    └── root/c/e
-`, 1, 4},
+    ├── root/c/e
+    └── root/c/g
+        ├── root/c/g/h
+        └── root/c/g/i
+`, 2, 6},
 	{"deepLevel", &Options{Fs: fs, OutFile: out, DeepLevel: 1}, `root
 ├── a
 ├── b
 └── c
 `, 1, 2},
-	{"pattern", &Options{Fs: fs, OutFile: out, Pattern: "(a|e)"}, `root
+	{"pattern", &Options{Fs: fs, OutFile: out, Pattern: "(a|e|i)"}, `root
 ├── a
 └── c
-    └── e
-`, 1, 2},
-	{"ipattern", &Options{Fs: fs, OutFile: out, IPattern: "(a|e)"}, `root
+    ├── e
+    └── g
+        └── i
+`, 2, 3},
+	{"ipattern", &Options{Fs: fs, OutFile: out, IPattern: "(a|e|i)"}, `root
 ├── b
 └── c
-    └── d
-`, 1, 2},
+    ├── d
+    └── g
+        └── h
+`, 2, 3},
 	{"ignore-case", &Options{Fs: fs, OutFile: out, Pattern: "(A)", IgnoreCase: true}, `root
 ├── a
 └── c
-`, 1, 1},
+    └── g
+`, 2, 1},
 	{"ignore-case + prune", &Options{Fs: fs, OutFile: out, Pattern: "(A)", Prune: true, IgnoreCase: true}, `root
 └── a
 `, 0, 1},
 	{"include pattern + prune", &Options{Fs: fs, OutFile: out, Pattern: "(a)", Prune: true}, `root
 └── a
 `, 0, 1},
+	{"include pattern + matchdirs + c", &Options{Fs: fs, OutFile: out, Pattern: "c", MatchDirs: true}, `root
+└── c
+    ├── d
+    ├── e
+    └── g
+`, 2, 2},
+	{"include pattern + matchdirs + c*", &Options{Fs: fs, OutFile: out, Pattern: "*c*", MatchDirs: true}, `root
+└── c
+    ├── d
+    ├── e
+    └── g
+        ├── h
+        └── i
+`, 2, 2},
 	{"include pattern + prune", &Options{Fs: fs, OutFile: out, Pattern: "(d|e)", Prune: true}, `root
 └── c
     ├── d
     └── e
-`, 1, 2}}
+`, 1, 2},
+}
 
 func TestSimple(t *testing.T) {
 	root := &file{
@@ -176,6 +206,14 @@ func TestSimple(t *testing.T) {
 					{name: "d", size: 50},
 					{name: "e", size: 50},
 					{name: ".f", size: 0},
+					{
+						name: "g",
+						size: 100,
+						files: []*file{
+							{name: "h", size: 50},
+							{name: "i", size: 50},
+						},
+					},
 				},
 			},
 		},
@@ -188,7 +226,7 @@ func TestSimple(t *testing.T) {
 			t.Errorf("wrong dir count for test %q:\ngot:\n%d\nexpected:\n%d", test.name, d, test.dirs)
 		}
 		if f != test.files {
-			t.Errorf("wrong dir count for test %q:\ngot:\n%d\nexpected:\n%d", test.name, d, test.files)
+			t.Errorf("wrong file count for test %q:\ngot:\n%d\nexpected:\n%d", test.name, f, test.files)
 		}
 		inf.Print(test.opts)
 		if !out.equal(test.expected) {

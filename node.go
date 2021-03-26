@@ -49,6 +49,7 @@ type Options struct {
 	DeepLevel  int
 	Pattern    string
 	IPattern   string
+	MatchDirs  bool
 	Prune      bool
 	// File
 	ByteSize bool
@@ -114,6 +115,12 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 	if opts.DeepLevel > 0 && opts.DeepLevel <= node.depth {
 		return
 	}
+	// MatchDirs option
+	var dirMatch = false
+	if opts.MatchDirs && match(node.Name(), opts.Pattern, opts.IgnoreCase) {
+		// then disable prune and pattern for immediate children
+		dirMatch = true
+	}
 	names, err := opts.Fs.ReadDir(node.path)
 	if err != nil {
 		node.err = err
@@ -132,7 +139,7 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 		}
 		d, f := nnode.Visit(opts)
 		// "prune" option, hide empty directories
-		if opts.Prune && nnode.IsDir() && f == 0 {
+		if !dirMatch && opts.Prune && nnode.IsDir() && f == 0 {
 			continue
 		}
 		if nnode.err == nil && !nnode.IsDir() {
@@ -140,23 +147,13 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 			if opts.DirsOnly {
 				continue
 			}
-			var rePrefix string
-			if opts.IgnoreCase {
-				rePrefix = "(?i)"
-			}
 			// Pattern matching
-			if opts.Pattern != "" {
-				re, err := regexp.Compile(rePrefix + opts.Pattern)
-				if err == nil && !re.MatchString(name) {
-					continue
-				}
+			if !dirMatch && opts.Pattern != "" && !match(name, opts.Pattern, opts.IgnoreCase) {
+				continue
 			}
 			// IPattern matching
-			if opts.IPattern != "" {
-				re, err := regexp.Compile(rePrefix + opts.IPattern)
-				if err == nil && re.MatchString(name) {
-					continue
-				}
+			if opts.IPattern != "" && match(name, opts.IPattern, opts.IgnoreCase) {
+				continue
 			}
 		}
 		node.nodes = append(node.nodes, nnode)
@@ -167,6 +164,27 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 		node.sort(opts)
 	}
 	return
+}
+
+func match(name string, pattern string, icase bool) bool {
+	var prefix string
+	if icase {
+		prefix = "(?i)"
+	}
+	re, err := regexp.Compile(prefix + pattern)
+	return err == nil && re.MatchString(name)
+}
+
+// childOpts private function only pass modified Options
+// to children nodes, but leave parent Options unmodified
+func childOpts(pMatched bool, opts *Options) *Options {
+	if pMatched {
+		copts := (*opts)
+		copts.Prune = false
+		copts.Pattern = ""
+		return &copts
+	}
+	return opts
 }
 
 func (node *Node) sort(opts *Options) {
