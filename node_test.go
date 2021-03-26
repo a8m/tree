@@ -149,7 +149,18 @@ var listTests = []treeTest{
 	{"ignore-case", &Options{Fs: fs, OutFile: out, Pattern: "(A)", IgnoreCase: true}, `root
 ├── a
 └── c
-`, 1, 1}}
+`, 1, 1},
+	{"ignore-case + prune", &Options{Fs: fs, OutFile: out, Pattern: "(A)", Prune: true, IgnoreCase: true}, `root
+└── a
+`, 0, 1},
+	{"include pattern + prune", &Options{Fs: fs, OutFile: out, Pattern: "(a)", Prune: true}, `root
+└── a
+`, 0, 1},
+	{"include pattern + prune", &Options{Fs: fs, OutFile: out, Pattern: "(d|e)", Prune: true}, `root
+└── c
+    ├── d
+    └── e
+`, 1, 2}}
 
 func TestSimple(t *testing.T) {
 	root := &file{
