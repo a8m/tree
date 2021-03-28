@@ -146,14 +146,18 @@ var listTests = []treeTest{
 ├── b
 └── c
 `, 1, 2},
-	{"pattern", &Options{Fs: fs, OutFile: out, Pattern: "(a|e|i)"}, `root
+	{"pattern", &Options{Fs: fs, OutFile: out, Pattern: "a|e|i"}, `root
 ├── a
 └── c
     ├── e
     └── g
         └── i
 `, 2, 3},
-	{"ipattern", &Options{Fs: fs, OutFile: out, IPattern: "(a|e|i)"}, `root
+	{"pattern 0 files", &Options{Fs: fs, OutFile: out, Pattern: "x"}, `root
+└── c
+    └── g
+`, 2, 0},
+	{"ipattern", &Options{Fs: fs, OutFile: out, IPattern: "a|e|i"}, `root
 ├── b
 └── c
     ├── d
@@ -171,25 +175,33 @@ var listTests = []treeTest{
 	{"include pattern + prune", &Options{Fs: fs, OutFile: out, Pattern: "(a)", Prune: true}, `root
 └── a
 `, 0, 1},
-	{"include pattern + matchdirs + c", &Options{Fs: fs, OutFile: out, Pattern: "c", MatchDirs: true}, `root
+	{"include pattern + matchdirs + c", &Options{Fs: fs, OutFile: out, Pattern: "(c)", MatchDirs: true}, `root
 └── c
     ├── d
     ├── e
     └── g
 `, 2, 2},
-	{"include pattern + matchdirs + c*", &Options{Fs: fs, OutFile: out, Pattern: "*c*", MatchDirs: true}, `root
+	{"include pattern + matchdirs + c*", &Options{Fs: fs, OutFile: out, Pattern: "(c.*)", MatchDirs: true}, `root
 └── c
     ├── d
     ├── e
     └── g
         ├── h
         └── i
-`, 2, 2},
+`, 2, 4},
 	{"include pattern + prune", &Options{Fs: fs, OutFile: out, Pattern: "(d|e)", Prune: true}, `root
 └── c
     ├── d
     └── e
 `, 1, 2},
+	{"include pattern + prune", &Options{Fs: fs, OutFile: out, Pattern: "(c.*)", Prune: true, MatchDirs: true}, `root
+└── c
+    ├── d
+    ├── e
+    └── g
+        ├── h
+        └── i
+`, 2, 4},
 }
 
 func TestSimple(t *testing.T) {

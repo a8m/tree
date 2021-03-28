@@ -117,9 +117,9 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 	}
 	// MatchDirs option
 	var dirMatch = false
-	if opts.MatchDirs && match(node.Name(), opts.Pattern, opts.IgnoreCase) {
+	if node.depth != 0 && opts.MatchDirs {
 		// then disable prune and pattern for immediate children
-		dirMatch = true
+		dirMatch = node.match(opts.Pattern, opts)
 	}
 	names, err := opts.Fs.ReadDir(node.path)
 	if err != nil {
@@ -148,11 +148,11 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 				continue
 			}
 			// Pattern matching
-			if !dirMatch && opts.Pattern != "" && !match(name, opts.Pattern, opts.IgnoreCase) {
+			if !dirMatch && opts.Pattern != "" && !nnode.match(opts.Pattern, opts) {
 				continue
 			}
 			// IPattern matching
-			if opts.IPattern != "" && match(name, opts.IPattern, opts.IgnoreCase) {
+			if opts.IPattern != "" && nnode.match(opts.IPattern, opts) {
 				continue
 			}
 		}
@@ -166,25 +166,19 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 	return
 }
 
-func match(name string, pattern string, icase bool) bool {
+func (node *Node) match(pattern string, opt *Options) bool {
 	var prefix string
-	if icase {
+	if opt.IgnoreCase {
 		prefix = "(?i)"
 	}
-	re, err := regexp.Compile(prefix + pattern)
-	return err == nil && re.MatchString(name)
-}
 
-// childOpts private function only pass modified Options
-// to children nodes, but leave parent Options unmodified
-func childOpts(pMatched bool, opts *Options) *Options {
-	if pMatched {
-		copts := (*opts)
-		copts.Prune = false
-		copts.Pattern = ""
-		return &copts
+	search := node.Name()
+	re, err := regexp.Compile(prefix + pattern)
+	if strings.Contains(re.String(), "*") {
+		search = node.path
 	}
-	return opts
+
+	return err == nil && re.FindString(search) != ""
 }
 
 func (node *Node) sort(opts *Options) {
