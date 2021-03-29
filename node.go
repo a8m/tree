@@ -146,7 +146,7 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 		if nnode.IsDir() && opts.Prune && f == 0 {
 			continue
 		} else if nnode.IsDir() && opts.MatchDirs && opts.IPattern != "" && nnode.match(opts.IPattern, opts) {
-			return
+			continue
 		}
 		if nnode.err == nil && !nnode.IsDir() {
 			// "dirs only" option
@@ -184,7 +184,7 @@ func (node *Node) match(pattern string, opt *Options) bool {
 		search = node.path
 	}
 
-	fmt.Printf("search: %s, regex: %s, match: '%s' \n", search, re.String(), re.FindString(search))
+	// fmt.Printf("search: %s, regex: %s, match: '%s' \n", search, re.String(), re.FindString(search))
 	return err == nil && re.FindString(search) != ""
 }
 
