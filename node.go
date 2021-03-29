@@ -119,7 +119,11 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 	var dirMatch = false
 	if node.depth != 0 && opts.MatchDirs {
 		// then disable prune and pattern for immediate children
-		dirMatch = node.match(opts.Pattern, opts)
+		if opts.Pattern != "" {
+			dirMatch = node.match(opts.Pattern, opts)
+		} else if opts.IPattern != "" && node.match(opts.IPattern, opts) {
+			return
+		}
 	}
 	names, err := opts.Fs.ReadDir(node.path)
 	if err != nil {
@@ -139,8 +143,10 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 		}
 		d, f := nnode.Visit(opts)
 		// "prune" option, hide empty directories
-		if !dirMatch && opts.Prune && nnode.IsDir() && f == 0 {
+		if nnode.IsDir() && opts.Prune && f == 0 {
 			continue
+		} else if nnode.IsDir() && opts.MatchDirs && opts.IPattern != "" && nnode.match(opts.IPattern, opts) {
+			return
 		}
 		if nnode.err == nil && !nnode.IsDir() {
 			// "dirs only" option
@@ -178,6 +184,7 @@ func (node *Node) match(pattern string, opt *Options) bool {
 		search = node.path
 	}
 
+	fmt.Printf("search: %s, regex: %s, match: '%s' \n", search, re.String(), re.FindString(search))
 	return err == nil && re.FindString(search) != ""
 }
 

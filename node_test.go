@@ -109,24 +109,28 @@ var listTests = []treeTest{
 	{"basic", &Options{Fs: fs, OutFile: out}, `root
 ├── a
 ├── b
-└── c
-    ├── d
-    ├── e
-    └── g
-        ├── h
-        └── i
-`, 2, 6},
+├── c
+│   ├── d
+│   ├── e
+│   ├── g
+│   │   ├── h
+│   │   └── i
+│   └── k
+└── j
+`, 2, 8},
 	{"all", &Options{Fs: fs, OutFile: out, All: true, NoSort: true}, `root
 ├── a
 ├── b
-└── c
-    ├── d
-    ├── e
-    ├── .f
-    └── g
-        ├── h
-        └── i
-`, 2, 7},
+├── c
+│   ├── d
+│   ├── e
+│   ├── .f
+│   ├── g
+│   │   ├── h
+│   │   └── i
+│   └── k
+└── j
+`, 2, 9},
 	{"dirs", &Options{Fs: fs, OutFile: out, DirsOnly: true}, `root
 └── c
     └── g
@@ -134,74 +138,103 @@ var listTests = []treeTest{
 	{"fullPath", &Options{Fs: fs, OutFile: out, FullPath: true}, `root
 ├── root/a
 ├── root/b
-└── root/c
-    ├── root/c/d
-    ├── root/c/e
-    └── root/c/g
-        ├── root/c/g/h
-        └── root/c/g/i
-`, 2, 6},
+├── root/c
+│   ├── root/c/d
+│   ├── root/c/e
+│   ├── root/c/g
+│   │   ├── root/c/g/h
+│   │   └── root/c/g/i
+│   └── root/c/k
+└── root/j
+`, 2, 8},
 	{"deepLevel", &Options{Fs: fs, OutFile: out, DeepLevel: 1}, `root
 ├── a
 ├── b
-└── c
-`, 1, 2},
-	{"pattern", &Options{Fs: fs, OutFile: out, Pattern: "a|e|i"}, `root
+├── c
+└── j
+`, 1, 3},
+	{"pattern (a|e|i)", &Options{Fs: fs, OutFile: out, Pattern: "(a|e|i)"}, `root
 ├── a
 └── c
     ├── e
     └── g
         └── i
 `, 2, 3},
-	{"pattern 0 files", &Options{Fs: fs, OutFile: out, Pattern: "x"}, `root
+	{"pattern (x) + 0 files", &Options{Fs: fs, OutFile: out, Pattern: "(x)"}, `root
 └── c
     └── g
 `, 2, 0},
-	{"ipattern", &Options{Fs: fs, OutFile: out, IPattern: "a|e|i"}, `root
+	{"ipattern (a|e|i)", &Options{Fs: fs, OutFile: out, IPattern: "(a|e|i)"}, `root
 ├── b
-└── c
-    ├── d
-    └── g
-        └── h
-`, 2, 3},
-	{"ignore-case", &Options{Fs: fs, OutFile: out, Pattern: "(A)", IgnoreCase: true}, `root
+├── c
+│   ├── d
+│   ├── g
+│   │   └── h
+│   └── k
+└── j
+`, 2, 5},
+	{"pattern (A) + ignore-case", &Options{Fs: fs, OutFile: out, Pattern: "(A)", IgnoreCase: true}, `root
 ├── a
 └── c
     └── g
 `, 2, 1},
-	{"ignore-case + prune", &Options{Fs: fs, OutFile: out, Pattern: "(A)", Prune: true, IgnoreCase: true}, `root
+	{"pattern (A) + ignore-case + prune", &Options{Fs: fs, OutFile: out, Pattern: "(A)", Prune: true, IgnoreCase: true}, `root
 └── a
 `, 0, 1},
-	{"include pattern + prune", &Options{Fs: fs, OutFile: out, Pattern: "(a)", Prune: true}, `root
+	{"pattern (a) + prune", &Options{Fs: fs, OutFile: out, Pattern: "(a)", Prune: true}, `root
 └── a
 `, 0, 1},
-	{"include pattern + matchdirs + c", &Options{Fs: fs, OutFile: out, Pattern: "(c)", MatchDirs: true}, `root
+	{"pattern (c) + matchdirs", &Options{Fs: fs, OutFile: out, Pattern: "(c)", MatchDirs: true}, `root
 └── c
     ├── d
     ├── e
-    └── g
-`, 2, 2},
-	{"include pattern + matchdirs + c*", &Options{Fs: fs, OutFile: out, Pattern: "(c.*)", MatchDirs: true}, `root
+    ├── g
+    └── k
+`, 2, 3},
+	{"pattern (c.*) + matchdirs", &Options{Fs: fs, OutFile: out, Pattern: "(c.*)", MatchDirs: true}, `root
 └── c
     ├── d
     ├── e
-    └── g
-        ├── h
-        └── i
-`, 2, 4},
-	{"include pattern + prune", &Options{Fs: fs, OutFile: out, Pattern: "(d|e)", Prune: true}, `root
+    ├── g
+    │   ├── h
+    │   └── i
+    └── k
+`, 2, 5},
+	{"ipattern (c) + matchdirs", &Options{Fs: fs, OutFile: out, IPattern: "(c)", MatchDirs: true}, `root
+├── a
+├── b
+└── j
+`, 0, 3},
+	{"ipattern (g) + matchdirs", &Options{Fs: fs, OutFile: out, IPattern: "(g)", MatchDirs: true}, `root
+├── a
+├── b
+├── c
+│   ├── d
+│   ├── e
+│   └── k
+└── j
+`, 1, 6},
+	{"ipattern (a|e|i|h) + matchdirs + prune", &Options{Fs: fs, OutFile: out, IPattern: "(a|e|i|h)", MatchDirs: true, Prune: true}, `root
+├── b
+├── c
+│   ├── d
+│   └── k
+└── j
+`, 1, 4},
+	{"pattern (d|e) + prune", &Options{Fs: fs, OutFile: out, Pattern: "(d|e)", Prune: true}, `root
 └── c
     ├── d
     └── e
 `, 1, 2},
-	{"include pattern + prune", &Options{Fs: fs, OutFile: out, Pattern: "(c.*)", Prune: true, MatchDirs: true}, `root
+	{"pattern (c.*) + matchdirs + prune ", &Options{Fs: fs, OutFile: out, Pattern: "(c.*)", Prune: true, MatchDirs: true}, `root
 └── c
     ├── d
     ├── e
-    └── g
-        ├── h
-        └── i
-`, 2, 4},
+    ├── g
+    │   ├── h
+    │   └── i
+    └── k
+`, 2, 5},
 }
 
 func TestSimple(t *testing.T) {
@@ -226,8 +259,10 @@ func TestSimple(t *testing.T) {
 							{name: "i", size: 50},
 						},
 					},
+					{name: "k", size: 50},
 				},
 			},
+			{name: "j", size: 50},
 		},
 	}
 	fs.clean().addFile(root.name, root)
