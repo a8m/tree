@@ -239,9 +239,28 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 
 	// Sorting
 	if !opts.NoSort {
+		// The nodes stat data might not be fully loaded by the time we run,
+		// apart from when we are at the root due to the rwg.Wait() above.
+		// TODO: If we are sorting by _only_ name, we could also do it now.
+		if goProcs && node.depth != 0 {
+			return
+		}
+		if goProcs && node.depth == 0 {
+			node.recsort(opts)
+		}
 		node.sort(opts)
 	}
 	return
+}
+
+// recsort: Recursively sort all the children of this node.
+func (node *Node) recsort(opts *Options) {
+	for _, nnode := range node.nodes {
+		if nnode.IsDir() {
+			nnode.recsort(opts)
+		}
+		nnode.sort(opts)
+	}
 }
 
 func (node *Node) sort(opts *Options) {
