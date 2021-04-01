@@ -3,6 +3,7 @@ package tree
 import (
 	"errors"
 	"fmt"
+	"golang.org/x/sync/semaphore"
 	"io"
 	"os"
 	"os/user"
@@ -11,6 +12,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 )
 
 // Node represent some node in the tree
@@ -73,6 +75,11 @@ type Options struct {
 	Colorize bool
 	// Color defaults to ANSIColor()
 	Color func(*Node, string) string
+
+	// Internal data so we can do readdir()/stat() in parallel.
+	wg  sync.WaitGroup
+	sem *semaphore.Weighted
+	res chan workerResult
 }
 
 func (opts *Options) color(node *Node, s string) string {
@@ -83,15 +90,65 @@ func (opts *Options) color(node *Node, s string) string {
 	return f(node, s)
 }
 
+// workerResult for go-ness
+type workerResult struct {
+	p *Node
+	n *Node
+	d int
+	f int
+}
+
 // New get path and create new node(root).
 func New(path string) *Node {
 	return &Node{path: path, vpaths: make(map[string]bool)}
 }
 
+func newSubNode(opts *Options, node *Node, name string) (nnode *Node, dirs, files int) {
+	nnode = &Node{
+		path:   filepath.Join(node.path, name),
+		depth:  node.depth + 1,
+		vpaths: node.vpaths,
+	}
+	d, f := nnode.Visit(opts)
+	if nnode.err == nil && !nnode.IsDir() {
+		// "dirs only" option
+		if opts.DirsOnly {
+			return nil, 0, 0
+		}
+		var rePrefix string
+		if opts.IgnoreCase {
+			rePrefix = "(?i)"
+		}
+		// Pattern matching
+		if opts.Pattern != "" {
+			re, err := regexp.Compile(rePrefix + opts.Pattern)
+			if err == nil && !re.MatchString(name) {
+				return nil, 0, 0
+			}
+		}
+		// IPattern matching
+		if opts.IPattern != "" {
+			re, err := regexp.Compile(rePrefix + opts.IPattern)
+			if err == nil && re.MatchString(name) {
+				return nil, 0, 0
+			}
+		}
+	}
+
+	return nnode, d, f
+}
+
+const semWeight = 64
+const rootProc = true
+
 // Visit all files under the given node.
 func (node *Node) Visit(opts *Options) (dirs, files int) {
+	goProcs := !opts.FollowLink && (semWeight > 0)
+
 	// visited paths
-	if path, err := filepath.Abs(node.path); err == nil {
+	if !opts.FollowLink {
+		node.vpaths = nil
+	} else if path, err := filepath.Abs(node.path); err == nil {
 		path = filepath.Clean(path)
 		node.vpaths[path] = true
 	}
@@ -119,49 +176,91 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 		return
 	}
 	node.nodes = make(Nodes, 0)
-	for _, name := range names {
+	var rwg sync.WaitGroup
+	var fin chan workerResult
+	if goProcs && node.depth == 0 {
+		opts.sem = semaphore.NewWeighted(semWeight)
+		opts.res = make(chan workerResult, semWeight)
+		rwg.Add(1)
+		fin = make(chan workerResult)
+		go func() {
+			defer rwg.Done()
+			defer close(fin)
+			mdirs := 0
+			mfiles := 0
+			for val := range opts.res {
+				val.p.nodes = append(val.p.nodes, val.n)
+				mdirs, mfiles = mdirs+val.d, mfiles+val.f
+			}
+			fin <- workerResult{nil, node, mdirs, mfiles}
+		}()
+	}
+	for i := range names {
+		name := names[i]
 		// "all" option
 		if !opts.All && strings.HasPrefix(name, ".") {
 			continue
 		}
-		nnode := &Node{
-			path:   filepath.Join(node.path, name),
-			depth:  node.depth + 1,
-			vpaths: node.vpaths,
-		}
-		d, f := nnode.Visit(opts)
-		if nnode.err == nil && !nnode.IsDir() {
-			// "dirs only" option
-			if opts.DirsOnly {
+		if goProcs && (rootProc || node.depth != 0) {
+			if opts.sem.TryAcquire(2) {
+				opts.wg.Add(1)
+				go func() {
+					defer opts.wg.Done()
+					defer opts.sem.Release(2)
+					nnode, d, f := newSubNode(opts, node, name)
+					if nnode == nil {
+						return
+					}
+					opts.res <- workerResult{node, nnode, d, f}
+				}()
 				continue
 			}
-			var rePrefix string
-			if opts.IgnoreCase {
-				rePrefix = "(?i)"
-			}
-			// Pattern matching
-			if opts.Pattern != "" {
-				re, err := regexp.Compile(rePrefix + opts.Pattern)
-				if err == nil && !re.MatchString(name) {
-					continue
-				}
-			}
-			// IPattern matching
-			if opts.IPattern != "" {
-				re, err := regexp.Compile(rePrefix + opts.IPattern)
-				if err == nil && re.MatchString(name) {
-					continue
-				}
-			}
+		}
+		// We ran out of semaphores, so just process the new node directly...
+		nnode, d, f := newSubNode(opts, node, name)
+		if nnode == nil {
+			continue
+		}
+		if goProcs && (rootProc || node.depth != 0) {
+			opts.res <- workerResult{node, nnode, d, f}
+			continue
 		}
 		node.nodes = append(node.nodes, nnode)
 		dirs, files = dirs+d, files+f
 	}
+	if goProcs && node.depth == 0 {
+		opts.wg.Wait()
+		close(opts.res)
+		val := <-fin
+		dirs += val.d
+		files += val.f
+		rwg.Wait()
+	}
+
 	// Sorting
 	if !opts.NoSort {
+		// The nodes stat data might not be fully loaded by the time we run,
+		// apart from when we are at the root due to the rwg.Wait() above.
+		// TODO: If we are sorting by _only_ name, we could also do it now.
+		if goProcs && node.depth != 0 {
+			return
+		}
+		if goProcs && node.depth == 0 {
+			node.recsort(opts)
+		}
 		node.sort(opts)
 	}
 	return
+}
+
+// recsort: Recursively sort all the children of this node.
+func (node *Node) recsort(opts *Options) {
+	for _, nnode := range node.nodes {
+		if nnode.IsDir() {
+			nnode.recsort(opts)
+		}
+		nnode.sort(opts)
+	}
 }
 
 func (node *Node) sort(opts *Options) {
