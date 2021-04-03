@@ -184,7 +184,6 @@ func (node *Node) match(pattern string, opt *Options) bool {
 		search = node.path
 	}
 
-	// fmt.Printf("search: %s, regex: %s, match: '%s' \n", search, re.String(), re.FindString(search))
 	return err == nil && re.FindString(search) != ""
 }
 
