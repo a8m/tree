@@ -116,7 +116,7 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 		return
 	}
 	// MatchDirs option
-	var dirMatch = false
+	var dirMatch bool
 	if node.depth != 0 && opts.MatchDirs {
 		// then disable prune and pattern for immediate children
 		if opts.Pattern != "" {
