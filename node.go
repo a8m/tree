@@ -177,13 +177,11 @@ func (node *Node) match(pattern string, opt *Options) bool {
 	if opt.IgnoreCase {
 		prefix = "(?i)"
 	}
-
 	search := node.Name()
-	re, err := regexp.Compile(prefix + pattern)
-	if strings.Contains(re.String(), "*") {
+	if strings.Contains(pattern, "*") {
 		search = node.path
 	}
-
+	re, err := regexp.Compile(prefix + pattern)
 	return err == nil && re.FindString(search) != ""
 }
 
