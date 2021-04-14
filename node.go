@@ -142,13 +142,15 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 			vpaths: node.vpaths,
 		}
 		d, f := nnode.Visit(opts)
-		// "prune" option, hide empty directories
-		if nnode.IsDir() && opts.Prune && f == 0 {
-			continue
-		} else if nnode.IsDir() && opts.MatchDirs && opts.IPattern != "" && nnode.match(opts.IPattern, opts) {
-			continue
-		}
-		if nnode.err == nil && !nnode.IsDir() {
+		if nnode.IsDir() {
+			// "prune" option, hide empty directories
+			if opts.Prune && f == 0 {
+				continue
+			}
+			if opts.MatchDirs && opts.IPattern != "" && nnode.match(opts.IPattern, opts) {
+				continue
+			}
+		} else if nnode.err == nil {
 			// "dirs only" option
 			if opts.DirsOnly {
 				continue
