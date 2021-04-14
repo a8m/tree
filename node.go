@@ -49,6 +49,8 @@ type Options struct {
 	DeepLevel  int
 	Pattern    string
 	IPattern   string
+	MatchDirs  bool
+	Prune      bool
 	// File
 	ByteSize bool
 	UnitSize bool
@@ -113,6 +115,16 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 	if opts.DeepLevel > 0 && opts.DeepLevel <= node.depth {
 		return
 	}
+	// MatchDirs option
+	var dirMatch bool
+	if node.depth != 0 && opts.MatchDirs {
+		// then disable prune and pattern for immediate children
+		if opts.Pattern != "" {
+			dirMatch = node.match(opts.Pattern, opts)
+		} else if opts.IPattern != "" && node.match(opts.IPattern, opts) {
+			return
+		}
+	}
 	names, err := opts.Fs.ReadDir(node.path)
 	if err != nil {
 		node.err = err
@@ -130,28 +142,26 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 			vpaths: node.vpaths,
 		}
 		d, f := nnode.Visit(opts)
-		if nnode.err == nil && !nnode.IsDir() {
+		if nnode.IsDir() {
+			// "prune" option, hide empty directories
+			if opts.Prune && f == 0 {
+				continue
+			}
+			if opts.MatchDirs && opts.IPattern != "" && nnode.match(opts.IPattern, opts) {
+				continue
+			}
+		} else if nnode.err == nil {
 			// "dirs only" option
 			if opts.DirsOnly {
 				continue
 			}
-			var rePrefix string
-			if opts.IgnoreCase {
-				rePrefix = "(?i)"
-			}
 			// Pattern matching
-			if opts.Pattern != "" {
-				re, err := regexp.Compile(rePrefix + opts.Pattern)
-				if err == nil && !re.MatchString(name) {
-					continue
-				}
+			if !dirMatch && opts.Pattern != "" && !nnode.match(opts.Pattern, opts) {
+				continue
 			}
 			// IPattern matching
-			if opts.IPattern != "" {
-				re, err := regexp.Compile(rePrefix + opts.IPattern)
-				if err == nil && re.MatchString(name) {
-					continue
-				}
+			if opts.IPattern != "" && nnode.match(opts.IPattern, opts) {
+				continue
 			}
 		}
 		node.nodes = append(node.nodes, nnode)
@@ -162,6 +172,19 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 		node.sort(opts)
 	}
 	return
+}
+
+func (node *Node) match(pattern string, opt *Options) bool {
+	var prefix string
+	if opt.IgnoreCase {
+		prefix = "(?i)"
+	}
+	search := node.Name()
+	if strings.Contains(pattern, "*") {
+		search = node.path
+	}
+	re, err := regexp.Compile(prefix + pattern)
+	return err == nil && re.FindString(search) != ""
 }
 
 func (node *Node) sort(opts *Options) {
