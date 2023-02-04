@@ -142,26 +142,28 @@ func (node *Node) Visit(opts *Options) (dirs, files int) {
 			vpaths: node.vpaths,
 		}
 		d, f := nnode.Visit(opts)
-		if nnode.IsDir() {
-			// "prune" option, hide empty directories
-			if opts.Prune && f == 0 {
-				continue
-			}
-			if opts.MatchDirs && opts.IPattern != "" && nnode.match(opts.IPattern, opts) {
-				continue
-			}
-		} else if nnode.err == nil {
-			// "dirs only" option
-			if opts.DirsOnly {
-				continue
-			}
-			// Pattern matching
-			if !dirMatch && opts.Pattern != "" && !nnode.match(opts.Pattern, opts) {
-				continue
-			}
-			// IPattern matching
-			if opts.IPattern != "" && nnode.match(opts.IPattern, opts) {
-				continue
+		if nnode.err == nil {
+			if nnode.IsDir() {
+				// "prune" option, hide empty directories
+				if opts.Prune && f == 0 {
+					continue
+				}
+				if opts.MatchDirs && opts.IPattern != "" && nnode.match(opts.IPattern, opts) {
+					continue
+				}
+			} else {
+				// "dirs only" option
+				if opts.DirsOnly {
+					continue
+				}
+				// Pattern matching
+				if !dirMatch && opts.Pattern != "" && !nnode.match(opts.Pattern, opts) {
+					continue
+				}
+				// IPattern matching
+				if opts.IPattern != "" && nnode.match(opts.IPattern, opts) {
+					continue
+				}
 			}
 		}
 		node.nodes = append(node.nodes, nnode)
