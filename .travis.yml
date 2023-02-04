@@ -5,9 +5,9 @@ arch:
 language: go
 sudo: false
 go:
-  - 1.13.x
-  - 1.14.x
-  - 1.15.x
+  - 1.18.x
+  - 1.19.x
+  - 1.20.x
   - tip
 matrix:
   allow_failures:
