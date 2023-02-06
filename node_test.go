@@ -1,6 +1,7 @@
 package tree
 
 import (
+	"errors"
 	"os"
 	"syscall"
 	"testing"
@@ -63,6 +64,9 @@ func (fs *MockFs) addFile(path string, file *file) *MockFs {
 }
 
 func (fs *MockFs) Stat(path string) (os.FileInfo, error) {
+	if path == "root/bad" {
+		return nil, errors.New("stat failed")
+	}
 	return fs.files[path], nil
 }
 func (fs *MockFs) ReadDir(path string) ([]string, error) {
@@ -490,5 +494,160 @@ func TestCount(t *testing.T) {
 	if d != 7 || f != 8 {
 		inf.Print(opt)
 		t.Errorf("TestCount - expect (dir, file) count to be equal to (7, 8)\n%s", out.str)
+	}
+}
+
+var errorTests = []treeTest{
+	{"basic", &Options{Fs: fs, OutFile: out}, `root
+├── a
+├── b
+├── j
+└── bad [stat failed]
+`, 0, 3},
+	{"all", &Options{Fs: fs, OutFile: out, All: true, NoSort: true}, `root
+├── a
+├── b
+├── j
+└── bad [stat failed]
+`, 0, 3},
+	{"dirs", &Options{Fs: fs, OutFile: out, DirsOnly: true}, `root
+└── bad [stat failed]
+`, 0, 0},
+	{"fullPath", &Options{Fs: fs, OutFile: out, FullPath: true}, `root
+├── root/a
+├── root/b
+├── root/j
+└── root/bad [stat failed]
+`, 0, 3},
+	{"deepLevel", &Options{Fs: fs, OutFile: out, DeepLevel: 1}, `root
+├── a
+├── b
+├── j
+└── bad [stat failed]
+`, 0, 3},
+	{"pattern (a|e|i)", &Options{Fs: fs, OutFile: out, Pattern: "(a|e|i)"}, `root
+├── a
+└── bad [stat failed]
+`, 0, 1},
+	{"pattern (x) + 0 files", &Options{Fs: fs, OutFile: out, Pattern: "(x)"}, `root
+└── bad [stat failed]
+`, 0, 0},
+	{"ipattern (a|e|i)", &Options{Fs: fs, OutFile: out, IPattern: "(a|e|i)"}, `root
+├── b
+├── j
+└── bad [stat failed]
+`, 0, 2},
+	{"pattern (A) + ignore-case", &Options{Fs: fs, OutFile: out, Pattern: "(A)", IgnoreCase: true}, `root
+├── a
+└── bad [stat failed]
+`, 0, 1},
+	{"pattern (A) + ignore-case + prune", &Options{Fs: fs, OutFile: out, Pattern: "(A)", Prune: true, IgnoreCase: true}, `root
+├── a
+└── bad [stat failed]
+`, 0, 1},
+	{"pattern (a) + prune", &Options{Fs: fs, OutFile: out, Pattern: "(a)", Prune: true}, `root
+├── a
+└── bad [stat failed]
+`, 0, 1},
+	{"pattern (c) + matchdirs", &Options{Fs: fs, OutFile: out, Pattern: "(c)", MatchDirs: true}, `root
+└── bad [stat failed]
+`, 0, 0},
+	{"pattern (c.*) + matchdirs", &Options{Fs: fs, OutFile: out, Pattern: "(c.*)", MatchDirs: true}, `root
+└── bad [stat failed]
+`, 0, 0},
+	{"ipattern (c) + matchdirs", &Options{Fs: fs, OutFile: out, IPattern: "(c)", MatchDirs: true}, `root
+├── a
+├── b
+├── j
+└── bad [stat failed]
+`, 0, 3},
+	{"ipattern (g) + matchdirs", &Options{Fs: fs, OutFile: out, IPattern: "(g)", MatchDirs: true}, `root
+├── a
+├── b
+├── j
+└── bad [stat failed]
+`, 0, 3},
+	{"ipattern (a|e|i|h) + matchdirs + prune", &Options{Fs: fs, OutFile: out, IPattern: "(a|e|i|h)", MatchDirs: true, Prune: true}, `root
+├── b
+├── j
+└── bad [stat failed]
+`, 0, 2},
+	{"pattern (d|e) + prune", &Options{Fs: fs, OutFile: out, Pattern: "(d|e)", Prune: true}, `root
+└── bad [stat failed]
+`, 0, 0},
+	{"pattern (c.*) + matchdirs + prune ", &Options{Fs: fs, OutFile: out, Pattern: "(c.*)", Prune: true, MatchDirs: true}, `root
+└── bad [stat failed]
+`, 0, 0},
+
+	{"name-sort", &Options{Fs: fs, OutFile: out, NameSort: true}, `root
+├── a
+├── b
+├── j
+└── bad [stat failed]
+`, 0, 3},
+	{"dirs-first sort", &Options{Fs: fs, OutFile: out, DirSort: true}, `root
+├── a
+├── b
+├── j
+└── bad [stat failed]
+`, 0, 3},
+	{"reverse sort", &Options{Fs: fs, OutFile: out, ReverSort: true, NameSort: true}, `root
+├── bad [stat failed]
+├── j
+├── b
+└── a
+`, 0, 3},
+	{"no-sort", &Options{Fs: fs, OutFile: out, NoSort: true, DirSort: true}, `root
+├── a
+├── b
+├── j
+└── bad [stat failed]
+`, 0, 3},
+	{"size-sort", &Options{Fs: fs, OutFile: out, SizeSort: true}, `root
+├── a
+├── b
+├── j
+└── bad [stat failed]
+`, 0, 3},
+	{"last-mod-sort", &Options{Fs: fs, OutFile: out, ModSort: true}, `root
+├── a
+├── b
+├── j
+└── bad [stat failed]
+`, 0, 3},
+	{"c-time-sort", &Options{Fs: fs, OutFile: out, CTimeSort: true}, `root
+├── a
+├── b
+├── j
+└── bad [stat failed]
+`, 0, 3},
+}
+
+func TestError(t *testing.T) {
+	root := &file{
+		name: "root",
+		size: 200,
+		files: []*file{
+			{name: "a", size: 50},
+			{name: "b", size: 50},
+			{name: "j", size: 50},
+			{name: "bad", size: 50}, // stat fails on this file
+		},
+	}
+	fs.clean().addFile(root.name, root)
+	for _, test := range errorTests {
+		inf := New(root.name)
+		d, f := inf.Visit(test.opts)
+		if d != test.dirs {
+			t.Errorf("wrong dir count for test %q:\ngot:\n%d\nexpected:\n%d", test.name, d, test.dirs)
+		}
+		if f != test.files {
+			t.Errorf("wrong file count for test %q:\ngot:\n%d\nexpected:\n%d", test.name, f, test.files)
+		}
+		inf.Print(test.opts)
+		if !out.equal(test.expected) {
+			t.Errorf("%s:\ngot:\n%+v\nexpected:\n%+v", test.name, out.str, test.expected)
+		}
+		out.clear()
 	}
 }
