@@ -17,22 +17,38 @@ func (b ByFunc) Less(i, j int) bool {
 type SortFunc func(f1, f2 os.FileInfo) bool
 
 func ModSort(f1, f2 os.FileInfo) bool {
+	// This ensures any nil os.FileInfos sort at the end
+	if f1 == nil || f2 == nil {
+		return f2 == nil
+	}
 	return f1.ModTime().Before(f2.ModTime())
 }
 
 func DirSort(f1, f2 os.FileInfo) bool {
+	if f1 == nil || f2 == nil {
+		return f2 == nil
+	}
 	return f1.IsDir() && !f2.IsDir()
 }
 
 func SizeSort(f1, f2 os.FileInfo) bool {
+	if f1 == nil || f2 == nil {
+		return f2 == nil
+	}
 	return f1.Size() < f2.Size()
 }
 
 func NameSort(f1, f2 os.FileInfo) bool {
+	if f1 == nil || f2 == nil {
+		return f2 == nil
+	}
 	return f1.Name() < f2.Name()
 }
 
 func VerSort(f1, f2 os.FileInfo) bool {
+	if f1 == nil || f2 == nil {
+		return f2 == nil
+	}
 	return NaturalLess(f1.Name(), f2.Name())
 }
 

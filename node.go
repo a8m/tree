@@ -254,7 +254,11 @@ func (node *Node) print(indent string, opts *Options) {
 		if msgs := strings.Split(err, ": "); len(msgs) > 1 {
 			err = msgs[1]
 		}
-		fmt.Printf("%s [%s]\n", node.path, err)
+		name := node.path
+		if !opts.FullPath {
+			name = filepath.Base(name)
+		}
+		fmt.Fprintf(opts.OutFile, "%s [%s]\n", name, err)
 		return
 	}
 	if !node.IsDir() {
