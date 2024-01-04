@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"time"
 )
 
 // Node represent some node in the tree
@@ -75,6 +76,7 @@ type Options struct {
 	Colorize bool
 	// Color defaults to ANSIColor()
 	Color func(*Node, string) string
+	Now   time.Time
 }
 
 func (opts *Options) color(node *Node, s string) string {
@@ -303,7 +305,17 @@ func (node *Node) print(indent string, opts *Options) {
 		}
 		// Last modification
 		if opts.LastMod {
-			props = append(props, node.ModTime().Format("Jan 02 15:04"))
+			t := opts.Now
+			if t.IsZero() {
+				t = time.Now()
+			}
+
+			format := "Jan 02 15:04"
+			if node.ModTime().Year() != t.Year() {
+				format = "Jan 02  2006"
+			}
+
+			props = append(props, node.ModTime().Format(format))
 		}
 		// Print properties
 		if len(props) > 0 {
