@@ -388,9 +388,9 @@ c
 ├── [-rwxr-xr-x]  b
 └── [-rw-rw-rw-]  c
 `, 0, 3},
-	{"lastMod", &Options{Fs: fs, OutFile: out, LastMod: true}, `root
+	{"lastMod", &Options{Fs: fs, OutFile: out, LastMod: true, Now: time.Date(2015, 1, 1, 0, 0, 0, 0, time.UTC)}, `root
 ├── [Feb 11 00:00]  a
-├── [Jan 28 00:00]  b
+├── [Jan 28  2006]  b
 └── [Jul 12 00:00]  c
 `, 0, 3}}
 
